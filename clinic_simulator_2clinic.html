@@ -1,0 +1,2011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A two-clinic square simulation with continuous triangular demand, corner clinics, routing policies, warm-up, replications, and confidence intervals.">
+<title>Two-clinic square simulator</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--bg:#f3f5f4;--ink:#183238;--muted:#597079;--line:#d9e3e4;--teal:#126a60;--teal-soft:#e8f3ef;--blue:#216596;--blue-soft:#e9f1f8;--orange:#b85b2c;--orange-soft:#fcf0e7;--warn:#805811;--warn-soft:#fff6df;--danger:#a43732;--radius:13px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.65}input,select{color:var(--ink)}main{max-width:1380px;margin:auto;padding:30px 30px 56px}h1,h2,h3,p{margin-top:0}h1{font-size:30px;line-height:1.2;letter-spacing:-.035em;font-weight:650;margin-bottom:7px}h2{font-size:19px;line-height:1.4;letter-spacing:-.01em;margin-bottom:6px}h3{font-size:14px;font-weight:700;margin-bottom:12px}p{margin-bottom:12px}.muted{color:var(--muted)}.small{font-size:12px}.eyebrow{font-size:11px;font-weight:750;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:9px}.header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:25px}.header p:last-child{margin-bottom:0}.actions{display:flex;align-items:center;gap:9px;flex-shrink:0}.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:8px;padding:11px 16px;font-size:13px;font-weight:650}.btn.primary{background:var(--teal);border-color:var(--teal);color:white}.btn.secondary{background:transparent}.hidden,[hidden]{display:none!important}.statusbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:13px;min-height:25px}.status{font-size:13px;color:var(--muted)}.status.running{color:var(--teal)}.status.error{color:var(--danger)}.status.dirty{color:var(--warn)}.pill{font-size:11px;font-weight:650;letter-spacing:.02em;background:#e6eceb;color:var(--ink);border-radius:20px;padding:5px 10px;white-space:nowrap}.pill.warn{color:var(--warn);background:var(--warn-soft)}.pill.ok{color:var(--teal);background:var(--teal-soft)}.progress{height:3px;background:#dde8e5;border-radius:3px;margin-bottom:14px;overflow:hidden}.progress>div{height:100%;background:var(--teal);width:0;transition:width .2s ease}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.metric{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:22px 23px 20px;min-height:151px}.metric-label{font-size:12px;color:var(--muted);font-weight:600}.metric-value{font-size:37px;line-height:1.3;font-weight:650;letter-spacing:-.04em;margin:6px 0;color:var(--ink);font-variant-numeric:tabular-nums}.metric-value span{font-size:13px;letter-spacing:0;font-weight:400;margin-left:6px;color:var(--muted)}.metric-ci{font-size:12px;min-height:20px;color:var(--teal)}.metric-note{font-size:11px;color:var(--muted)}.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:23px 25px;margin-top:17px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:17px}.panel-head p{margin:0}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:right;font-size:11px;font-weight:650;letter-spacing:.02em;color:var(--muted);padding:10px 13px;background:#f8faf9;white-space:nowrap}th:first-child,td:first-child{text-align:left}td{border-bottom:1px solid #e8eeee;text-align:right;padding:13px;font-variant-numeric:tabular-nums;vertical-align:top}tr:last-child td{border-bottom:0}td .estimate{font-size:15px;font-weight:600;white-space:nowrap}td .ci{display:block;font-size:11px;font-weight:400;color:var(--muted);white-space:nowrap;margin-top:3px}.clinic-name{font-weight:650;white-space:nowrap}.clinic-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}.c1{background:var(--blue)}.c2{background:var(--orange)}.results-note{font-size:12px;color:var(--muted);margin:12px 0 0}.run-summary{font-size:12px;color:var(--muted);margin:15px 1px 0}.workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(310px,1fr);gap:17px;align-items:start}.workbench>.panel{height:auto}.fieldset{border:0;margin:0;padding:0;min-width:0}.form-group+.form-group{border-top:1px solid #e5ecec;margin-top:20px;padding-top:18px}.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field label,.range-label{font-size:12px;font-weight:600}.field input,.field select{height:39px;width:100%;border:1px solid #cbd9da;border-radius:7px;padding:7px 10px;background:white;font-size:13px}.field input:disabled,.field select:disabled{background:#f1f4f3;color:#839293}.field small{font-size:11px;color:var(--muted);line-height:1.4}.wide{grid-column:1/-1}.two-wide{grid-column:span 2}.range-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:5px}.range-head output{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}.range-line{display:flex;align-items:center;gap:12px}.range-line input[type=range]{accent-color:var(--teal);width:100%;margin:10px 0;height:21px;border:0;padding:0}.range-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}.policy-note{font-size:12px;background:#f4f8f6;border-radius:7px;padding:11px 13px;margin:13px 0 0}.notice{font-size:12px;color:var(--warn);background:var(--warn-soft);border-radius:7px;padding:11px 13px;margin:12px 0 0}.errorbox{font-size:13px;color:var(--danger);border:1px solid #e5bfbc;background:#fff4f2;border-radius:8px;padding:13px 15px;margin-bottom:16px}.geometry{display:block;width:100%;max-width:420px;margin:4px auto 0;overflow:visible}.map-footer{font-size:12px;margin:1px 0 0;color:var(--muted)}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:7px 0 11px}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:16px;height:3px;display:inline-block;background:var(--teal)}.legend i.blue{background:var(--blue)}.legend i.orange{background:var(--orange)}.legend i.dashed{height:0;background:transparent;border-top:2px dashed var(--ink)}.calibration{margin-top:16px;border-top:1px solid #e5ecec;padding-top:15px}.key-values{display:grid;grid-template-columns:1fr auto;font-size:12px;gap:6px 12px}.key-values .value{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}.chart-wrap{position:relative;width:100%;min-height:245px}.chart{width:100%;height:250px;display:block}.chart-empty{height:235px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}.chart-legend{display:flex;gap:17px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.chart-legend span{display:flex;align-items:center;gap:6px}.chart-legend i{width:17px;height:3px;background:var(--ink)}.chart-legend i.blue{background:var(--blue)}.chart-legend i.orange{background:var(--orange)}.diagnostics{margin-top:32px;padding-top:25px;border-top:1px solid #d4dfdf}.section-title{display:flex;align-items:center;justify-content:space-between;gap:15px}.diagnostic-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.diagnostic-grid>.panel{margin-top:13px}.check-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #e8eeee;font-size:12px}.check-row:last-child{border:0}.check-value{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}.check-value.pass{color:var(--teal)}.check-value.fail{color:var(--danger)}details{margin-top:17px;border:1px solid var(--line);border-radius:9px;padding:14px 18px;background:#fafcfb}summary{font-size:13px;font-weight:650;cursor:pointer}details p,details li{font-size:12px;color:var(--muted)}details ul{padding-left:20px;margin-bottom:0}details li{margin:8px 0}footer{font-size:11px;color:var(--muted);margin-top:23px}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #70b5a9;outline-offset:3px}.empty-cell{text-align:center;color:var(--muted);padding:22px}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px}.total-row td{font-weight:650;background:#f6f9f7}.stale-tag{color:var(--warn)}
+.header>.actions{align-items:flex-end}.policy-picker{width:240px}
+.comparison-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:6px}.comparison-heading h2{margin-bottom:0}.comparison-delay{font-size:12px;color:var(--blue);font-weight:600}
+.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.workbench{margin-bottom:26px}.workbench>.panel{margin-top:0}
+@media(max-width:1050px){main{padding:24px 18px 42px}.workbench{grid-template-columns:minmax(0,1.4fr) minmax(290px,1fr)}.form-grid{grid-template-columns:1fr 1fr}.two-wide{grid-column:span 2}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.metric{padding:18px}.metric-value{font-size:31px}.panel{padding:20px}.diagnostic-grid{grid-template-columns:1fr}}
+@media(max-width:760px){main{padding:20px 12px 35px}.header{align-items:flex-start;flex-direction:column;gap:15px}h1{font-size:25px}.actions{width:100%}.actions .primary{flex:1}.metrics{grid-template-columns:1fr}.metric{min-height:0;padding:16px 18px;display:grid;grid-template-columns:1fr auto}.metric-value{grid-column:2;grid-row:1/4;margin:0;align-self:center}.metric-ci,.metric-note{grid-column:1}.metric-label{grid-column:1}.metric-note{margin-top:2px}.workbench{grid-template-columns:1fr}.panel{padding:18px 15px}.form-grid{gap:13px}.diagnostics{margin-top:25px}.statusbar{align-items:flex-start}.panel-head{flex-direction:column;gap:8px}th,td{padding:10px}.metric-value span{display:none}.diagnostic-grid{grid-template-columns:1fr}.chart-legend{font-size:11px}}
+@media(max-width:760px){.header>.actions{flex-wrap:wrap}.header .policy-picker{width:100%;flex:1 1 100%}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header class="header">
+    <div><p class="eyebrow">Spatial service systems</p><h1>Two-clinic square simulator</h1><p class="muted">Clinics at opposite square corners · Poisson arrivals · FCFS service</p></div>
+    <div class="actions"><div class="field policy-picker"><label for="policy">Scheduling policy</label><select id="policy" form="settings-form"><option value="all">Compare all policies</option><option value="ac">Allocation-centered</option><option value="greedy">Ordinary greedy</option><option value="penalized">Penalized greedy</option><option value="shortest">Shortest waiting (N / μ)</option></select></div><button class="btn secondary" id="cancel" type="button" hidden>Cancel run</button><button class="btn primary" id="run" type="submit" form="settings-form">Run comparison</button></div>
+  </header>
+  <div class="errorbox" id="error" role="alert" hidden></div>
+  <div class="workbench">
+    <section class="panel" aria-labelledby="settings-title">
+      <div class="panel-head"><div><h2 id="settings-title">Experiment settings</h2><p class="small muted">Rates are patients per time unit. All clinics start empty.</p></div><span id="load-pill" class="pill">Load —</span></div>
+      <form id="settings-form"><fieldset class="fieldset" id="settings-inputs">
+        <div class="form-group"><h3>Arrivals and service</h3><div class="form-grid">
+          <div class="field"><label for="rate-local">Local arrival rate</label><input id="rate-local" type="number" min="0" step="any" value="0.90" required></div>
+          <div class="field"><label for="rate-flexible">Flexible arrival rate</label><input id="rate-flexible" type="number" min="0" step="any" value="0" required></div>
+          <div class="field"><label for="rate-fixed">Fixed arrival rate</label><input id="rate-fixed" type="number" min="0" step="any" value="0" required></div>
+          <div class="field"><label for="mu-1">Clinic 1 service rate</label><input id="mu-1" type="number" min="0.000001" step="any" value="0.5" required><small>Mean service time = 1 / rate</small></div>
+          <div class="field"><label for="mu-2">Clinic 2 service rate</label><input id="mu-2" type="number" min="0.000001" step="any" value="0.5" required><small>One server per clinic</small></div>
+          <div class="field"><label for="service">Service distribution</label><select id="service"><option value="exponential">Exponential</option><option value="lognormal" selected>Lognormal</option></select></div>
+          <div class="field"><label for="cv">Lognormal service CV</label><input id="cv" type="number" min="0.001" max="10" step="any" value="0.25" disabled><small>Standard deviation / mean; both clinics</small></div>
+          <div class="field two-wide"><label for="fixed-p1">Fixed patients sent to clinic 1 (%)</label><input id="fixed-p1" type="number" min="0" max="100" step="any" value="50" required><small id="fixed-complement">Clinic 2 receives 50% of fixed patients</small></div>
+        </div></div>
+        <div class="form-group"><h3>Spatial demand</h3>
+          <div class="range-head"><label class="range-label" for="demand-p1">Local-demand mass in triangle 1</label><output id="demand-label" for="demand-p1">50%</output></div>
+          <div class="range-line"><input id="demand-p1" type="range" min="0" max="100" step="1" value="50" aria-label="Local-demand percentage in triangle 1"></div>
+          <div class="range-ends"><span>Triangle 1 · clinic 1 corner</span><span id="demand-complement">Triangle 2: 50%</span></div>
+          <p class="small muted" style="margin:10px 0 0">Choose a triangle with these probabilities, then draw the local patient's location uniformly inside it. The distribution has no point masses.</p>
+        </div>
+        <div class="form-group"><h3>Routing parameters</h3><div class="form-grid">
+          <div class="field"><label for="alpha">Travel weight α</label><input id="alpha" type="number" min="0.000001" step="any" value="10" required><small>Time units per unit distance</small></div>
+          <div class="field"><label for="kappa">Penalty κ</label><input id="kappa" type="number" min="0" step="any" value="1" disabled><small>Used by penalized greedy</small></div>
+        </div><p class="policy-note" id="policy-note"></p><p class="notice" id="calibration-warning" hidden></p></div>
+        <div class="form-group"><h3>Run configuration</h3><div class="form-grid">
+          <div class="field"><label for="duration">Simulation length</label><input id="duration" type="number" min="0.000001" step="any" value="1000000" required><small>Time units before draining</small></div>
+          <div class="field"><label for="warmup">Warm-up (%)</label><input id="warmup" type="number" min="0" max="99.9" step="any" value="20" required></div>
+          <div class="field"><label for="replications">Replications</label><input id="replications" type="number" min="1" max="500" step="1" value="5" required></div>
+          <div class="field"><label for="seed">Random seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="12345" required><small>Reproduce the same experiment</small></div>
+          <div class="field two-wide"><label>Observation window</label><div class="small muted" id="window-description" style="padding-top:7px">200,000–1,000,000 time units</div></div>
+        </div></div>
+      </fieldset></form>
+    </section>
+    <section class="panel" aria-labelledby="map-title">
+      <div class="panel-head"><div><h2 id="map-title">Demand geometry</h2><p class="small muted">Input preview · square [0,1] × [0,1]</p></div></div>
+      <svg id="geometry" class="geometry" viewBox="0 0 360 350" role="img" aria-labelledby="geometry-title geometry-desc"><title id="geometry-title">Two clinics at opposite corners of a square</title><desc id="geometry-desc">Triangle 1 is x+y less than or equal to 1. Triangle 2 is x+y greater than or equal to 1. Clinic 1 is at (0,0); clinic 2 is at (1,1).</desc></svg>
+      <div class="legend"><span><i class="blue"></i> Triangle 1</span><span><i class="orange"></i> Triangle 2</span><span><i class="dashed"></i> Static AC boundary</span></div>
+      <p class="map-footer">Clinic 1: (0,0) · Clinic 2: (1,1). Local travel uses Euclidean distance. Fixed and flexible patients need no sampled location.</p>
+      <div class="calibration"><h3>AC allocation at entered rates</h3><div id="calibration-values" class="key-values"></div><p class="small muted" style="margin:12px 0 0">AC uses the weights from the travel optimization at the entered arrival and service rates. The dashed boundary uses these same weights. Dynamic routing also responds to current queue lengths.</p></div>
+    </section>
+  </div>
+
+  <section aria-label="Main simulation results">
+    <div class="statusbar"><div id="status" class="status" role="status" aria-live="polite">Preparing the policy comparison…</div><span id="result-tag" class="pill">No completed run</span></div>
+    <div class="progress" id="progress" hidden role="progressbar" aria-label="Replications completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div>
+    <section class="panel" id="comparison-panel" aria-labelledby="comparison-title">
+      <div class="panel-head"><div><div class="comparison-heading"><h2 id="comparison-title">Policy comparison</h2><span class="comparison-delay" id="comparison-delay">Clinic 1 implied delay (ordinary greedy): —</span></div><p class="small muted"><strong>Local arrival rate:</strong> <span id="comparison-local-rate">—</span> patients per time unit</p><p class="small muted" id="comparison-caption">Eight policies use the same inputs and independent replications.</p></div><span class="pill" id="comparison-tag">Preparing comparison</span></div>
+      <div class="table-scroll"><table id="comparison-results"><thead><tr><th>Policy</th><th>Average total cost</th><th>95% CI · total cost</th><th>Average wait before service</th><th>95% CI · waiting time</th><th>Average local travel</th><th>95% CI · local travel</th></tr></thead><tbody><tr><td colspan="7" class="empty-cell">The requested comparison runs automatically. Change inputs and click Run comparison to repeat it.</td></tr></tbody></table></div>
+      <p class="results-note" id="comparison-inputs"></p>
+      <p class="results-note">Waiting and travel averages use arrivals after warm-up. Each policy's interval uses independent replication means and Student-t critical values. Policies share the same random input streams within a replication.</p>
+      <p class="results-note">Total cost per patient = average wait before service + mean service time + α × all-customer average travel. Mean service time uses each clinic's known 1/μᵢ and its observed allocation share. With μ₁ = μ₂ = 0.5 and all patients local, this is wait + 2 + α × local travel. Each cost interval is computed from combined replication costs.</p>
+      <p class="results-note" id="comparison-equivalence" hidden></p>
+    </section>
+    <div class="metrics" id="single-metrics" hidden>
+      <article class="metric"><div class="metric-label">Average total cost per patient</div><div class="metric-value" id="hero-cost">—<span>per patient</span></div><div class="metric-ci" id="hero-cost-ci">Arrivals after warm-up</div><div class="metric-note" id="hero-cost-note">Waiting + mean service + α × all-customer travel</div></article>
+      <article class="metric"><div class="metric-label">Average waiting time before service</div><div class="metric-value" id="hero-w">—<span>time units</span></div><div class="metric-ci" id="hero-w-ci">Arrivals after warm-up</div><div class="metric-note">Includes patients who start service immediately</div></article>
+      <article class="metric"><div class="metric-label">Average local travel distance</div><div class="metric-value" id="hero-travel">—<span>distance units</span></div><div class="metric-ci" id="hero-travel-ci">Local arrivals after warm-up</div><div class="metric-note">Square side length = 1</div></article>
+    </div>
+    <section class="panel" aria-labelledby="travel-bound-title">
+      <div class="panel-head"><div><h2 id="travel-bound-title">Optimized travel lower bound</h2><p class="small muted">Solved at the entered arrival and service rates · updates as inputs change</p></div><span class="pill">Current inputs</span></div>
+      <p class="small muted" id="travel-bound-basis"></p>
+      <div class="table-scroll"><table id="travel-bound-results"><thead><tr><th>Optimization basis</th><th>Per local patient</th><th>Per total arrival</th><th>Optimal local split: clinic 1 / 2</th></tr></thead><tbody><tr><td colspan="4" class="empty-cell">Enter valid rates to solve the optimization.</td></tr></tbody></table></div>
+      <p class="results-note" id="travel-bound-status"></p>
+      <p class="results-note" id="travel-bound-comparison" hidden></p>
+      <details id="travel-bound-details"><summary>Optimal capacity allocation and constraints</summary>
+        <p>The optimizer minimizes average local travel over spatial assignments. If qᵢ is the local share assigned to clinic i and fᵢ is its flexible arrival rate, it requires λL qᵢ + λF θᵢ + fᵢ ≤ μᵢ, q₁ + q₂ = 1, f₁ + f₂ = λC, and nonnegative shares and flows. The entered rates are used directly.</p>
+        <p id="travel-bound-interval"></p>
+        <div class="table-scroll"><table id="travel-bound-loads"><thead><tr><th>Clinic</th><th>Local rate</th><th>Fixed rate</th><th>Flexible rate</th><th>Total assigned rate</th><th>Service capacity</th></tr></thead><tbody></tbody></table></div>
+        <p>Flexible patients have zero travel cost in this model. Their split above is one feasible optimal allocation; other splits can have the same minimum travel. Extra flexible demand can leave local travel unchanged while it fits within the remaining capacity.</p>
+      </details>
+      <p class="results-note">This is a long-run capacity-feasible travel bound. Finite simulation estimates can fall below it through sampling or backlog accumulation.</p>
+    </section>
+    <section class="panel" aria-labelledby="greedy-target-title">
+      <div class="panel-head"><div><h2 id="greedy-target-title">Ordinary greedy: delay benchmark at entered rates</h2><p class="small muted">Travel optimization re-solved at the simulation's arrival and service rates · updates as inputs change</p></div></div>
+      <p class="small muted" id="greedy-target-basis"></p>
+      <p class="results-note" id="greedy-target-status"></p>
+      <div id="greedy-target-values" hidden>
+        <div class="table-scroll"><table id="greedy-target-results"><thead><tr><th>Clinic</th><th>Optimal local share</th><th>Optimized weight δᵢ(λ)</th><th>Implied delay αδᵢ(λ) (time)</th><th>Headcount μᵢαδᵢ(λ)</th></tr></thead><tbody></tbody></table></div>
+        <p class="results-note" id="greedy-target-summary"></p>
+      </div>
+      <p class="results-note" id="greedy-target-observed" hidden></p>
+      <p class="results-note">This is the delay configuration that reproduces the optimized static travel allocation. It is not an exact prediction of mean waiting or a finite-load queue lower bound.</p>
+      <details><summary>Optimization, interpretation, and critical-load comparison</summary><p>At the entered rates, the optimizer minimizes local travel subject to λL qᵢ + λF θᵢ + fᵢ ≤ μᵢ, q₁ + q₂ = 1, f₁ + f₂ = λC, and nonnegative shares and flows. It supplies clinic weights δᵢ(λ), normalized to have minimum zero, so that local patients minimize dᵢ + δᵢ(λ). These are the same entered-rate weights used by the travel lower-bound optimization above.</p><p>Ordinary greedy minimizes Uᵢ + αdᵢ, with Uᵢ = Nᵢ/μᵢ. Thus Uᵢ − minⱼ Uⱼ = αδᵢ(λ) would reproduce that optimized assignment. The smallest aggregate headcount compatible with these offsets is αΣᵢμᵢδᵢ(λ); Nᵢ includes any patient in service. A common congestion delay can sit above these offsets.</p><p id="greedy-target-critical"></p><p>The theorem concerns critical-load weights. At subcritical arrival rates, using the newly optimized weights gives a static allocation benchmark, not a theorem about the exact stochastic mean wait or extra wait above shortest waiting. The static program allows loads equal to capacity; it does not ensure a stable stochastic system at its minimizing allocation. Nᵢ/μᵢ is a routing delay index rather than the exact conditional waiting time for lognormal service. Finite simulations may deviate from the benchmark.</p></details>
+    </section>
+    <div class="panel">
+      <div class="panel-head"><div><h2 id="clinic-results-title">Clinic results</h2><p class="small muted" id="interval-caption">One estimate per independent replication. Use two or more replications for 95% confidence intervals.</p><p class="small muted" id="detail-policy-caption"></p></div><div class="field" id="comparison-detail-wrap" hidden><label for="comparison-detail">Detailed policy</label><select id="comparison-detail"></select></div></div>
+      <div class="table-scroll"><table id="clinic-results"><thead><tr><th>Clinic</th><th>Avg. waiting queue</th><th>Avg. in system</th><th>Avg. wait</th><th>Utilization</th><th>Arrival allocation</th></tr></thead><tbody><tr><td colspan="6" class="empty-cell">Results will appear here.</td></tr></tbody></table></div>
+      <p class="results-note">Queue lengths and utilization are time averages over the observation window. Waiting times and allocation shares use patients arriving in that window.</p>
+      <h3 style="margin-top:18px">Total cost per patient</h3>
+      <div class="key-values" id="cost-breakdown"></div><p class="results-note" id="cost-result-ci"></p>
+      <p class="results-note">Cost includes mean service, as in the paper's sojourn-time objective. Fixed and flexible patients contribute zero model travel. The mean service component uses known clinic means weighted by this policy's observed allocation; it is 2 when both μᵢ = 0.5. κ changes routing but does not multiply the waiting component of evaluated cost.</p>
+    </div>
+    <div class="panel" aria-labelledby="travel-title">
+      <div class="panel-head"><div><h2 id="travel-title">Average travel distance</h2><p class="small muted">Post-warm-up arrivals · distance to the assigned clinic · square side length = 1</p></div></div>
+      <div class="table-scroll"><table id="travel-results"><thead><tr><th>Customer group / origin</th><th>Average distance</th><th>95% confidence interval</th><th>Observed customers</th></tr></thead><tbody><tr><td colspan="4" class="empty-cell">Travel results will appear here.</td></tr></tbody></table></div>
+      <p class="results-note" id="travel-caption">Means and intervals use independent replication estimates. Customer counts are pooled across replications.</p>
+      <p class="results-note">The all-customer mean counts fixed and flexible travel as zero, as in the model. Bottom- and top-triangle averages concern local customers by their origin, regardless of the clinic they attend. Bottom = x + y ≤ 1; top = x + y ≥ 1.</p>
+    </div>
+    <p class="run-summary" id="run-summary">The comparison runs automatically. Detailed tables below show the selected policy.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="history-title">
+    <div class="panel-head"><div><h2 id="history-title">Queue path · first replication</h2><p class="small muted">Waiting patients, sampled at evenly spaced times. The shaded interval is warm-up.</p></div><div class="chart-legend"><span><i></i>Total</span><span><i class="blue"></i>Clinic 1</span><span><i class="orange"></i>Clinic 2</span></div></div>
+    <div class="chart-wrap" id="history"><div class="chart-empty">Run a simulation to see its queue path.</div></div>
+  </section>
+
+  <section class="diagnostics" aria-labelledby="diagnostics-title">
+    <div class="section-title"><div><p class="eyebrow" style="margin-bottom:4px">Simulation checks</p><h2 id="diagnostics-title">Arrivals, allocation & verification</h2></div><span class="pill" id="checks-tag">Not yet run</span></div>
+    <p class="small muted" id="counts-caption">Counts below are actual simulated counts, not theoretical expectations.</p>
+    <div class="panel"><div class="panel-head"><div><h3 style="margin-bottom:3px">All arrivals during the simulation</h3><p class="small muted">Includes warm-up; excludes the drain period. Queue percentages within each row are conditional on that patient type.</p></div></div><div class="table-scroll"><table id="all-arrivals"><thead><tr><th>Patient type</th><th>Count</th><th>% of arrivals</th><th>Clinic 1 count</th><th>Clinic 1 %</th><th>Clinic 2 count</th><th>Clinic 2 %</th></tr></thead><tbody><tr><td colspan="7" class="empty-cell">No completed run.</td></tr></tbody></table></div></div>
+    <div class="panel"><div class="panel-head"><div><h3 style="margin-bottom:3px">Arrivals in the observation window</h3><p class="small muted">These are the patients used for waiting-time and allocation results.</p></div></div><div class="table-scroll"><table id="observed-arrivals"><thead><tr><th>Patient type</th><th>Count</th><th>% of arrivals</th><th>Clinic 1 count</th><th>Clinic 1 %</th><th>Clinic 2 count</th><th>Clinic 2 %</th></tr></thead><tbody><tr><td colspan="7" class="empty-cell">No completed run.</td></tr></tbody></table></div></div>
+    <div class="panel" aria-labelledby="service-time-title">
+      <div class="panel-head"><div><h3 id="service-time-title">Service times by clinic</h3><p class="small muted" id="service-time-caption">Empirical service durations in time units, pooled across replications.</p></div><div class="field"><label for="service-cohort">Service sample</label><select id="service-cohort"><option value="observed">Arrivals after warm-up</option><option value="all">All arrivals, including warm-up</option></select></div></div>
+      <div class="table-scroll"><table id="service-time-results"><thead><tr><th>Clinic</th><th>Sample size</th><th>Average service time</th><th>Service-time SD</th><th>Model mean</th><th>Model SD</th></tr></thead><tbody><tr><td colspan="6" class="empty-cell">Service-time statistics appear after a completed run.</td></tr></tbody></table></div>
+      <p class="results-note">The SD describes variation among individual service durations. Full durations are included for the selected arrival cohort, even when service finishes after the horizon. With multiple replications, sample moments are pooled across patients. A sample SD requires at least two patients.</p>
+    </div>
+    <div class="diagnostic-grid">
+      <div class="panel"><h3>Model and count checks</h3><div id="checks"><p class="small muted">Checks will appear after a completed run.</p></div></div>
+      <div class="panel"><h3>Observation and waiting-time checks</h3><div id="window-checks"><p class="small muted">Checks will appear after a completed run.</p></div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><div><h3 style="margin-bottom:3px">Replication results</h3><p class="small muted">Each row is a separate run from an empty system, with an independent random stream.</p></div></div><div class="table-scroll"><table id="replication-results"><thead><tr><th>Replication</th><th>Seed</th><th>Arrivals</th><th>Avg. total cost</th><th>Avg. queue 1</th><th>Avg. queue 2</th><th>Avg. total queue</th><th>Avg. wait 1</th><th>Avg. wait 2</th><th>Checks</th></tr></thead><tbody><tr><td colspan="10" class="empty-cell">No completed run.</td></tr></tbody></table></div></div>
+    <details><summary>Measurement and routing definitions</summary><ul>
+      <li><strong>Queues.</strong> Nᵢ includes the patient in service. Qᵢ = max(Nᵢ − 1, 0) counts only waiting patients. Time averages are integrated exactly between events, not estimated from the plotted samples.</li>
+      <li><strong>Warm-up.</strong> For horizon T and warm-up fraction w, time averages use [wT,T]. Waiting-time averages use all patients arriving in that window, including patients whose service begins after T. Arrivals stop at T; the queues are then drained without adding drain time to queue averages.</li>
+      <li><strong>Service-time statistics.</strong> Each clinic's sample mean and sample SD use the complete service requirements of patients in the selected arrival cohort. Post-warm-up selection is by arrival time, not completion time. Sample moments are pooled across replications. The model mean is 1/μᵢ; the model SD is 1/μᵢ for exponential service and CV/μᵢ for lognormal service.</li>
+      <li><strong>Routing.</strong> Fixed assignments are always honored. Flexible patients minimize Uᵢ = Nᵢ / μᵢ. Local patients minimize Uᵢ + α(dᵢ + δᵢ(λ)) under AC, with weights optimized at the entered arrival and service rates, Uᵢ + αdᵢ under ordinary greedy, (1 + 2κ)Uᵢ + αdᵢ under penalized greedy, and Uᵢ under shortest waiting. Every tie is broken uniformly. Shortest waiting uses the paper's observable delay index, rather than unobserved remaining workload.</li>
+      <li><strong>Policy comparison.</strong> Compare all policies runs allocation-centered, ordinary greedy, shortest waiting, and penalized greedy at κ = 0.5, 1, 2, 4, and 8. Each row uses its own independent replication means for a Student-t confidence interval. Matching replication indices reuse common arrival, location, and clinic service streams across policies. The Detailed policy selector changes the clinic tables, travel breakdown, service statistics, queue path, and checks to that policy. Changing inputs retains the prior completed table and marks it as a previous comparison until rerun.</li>
+      <li><strong>Demand and service.</strong> A Poisson arrival stream has rate λL + λC + λF. Each arrival is assigned a type independently in proportion to those rates. Local locations are uniform within the randomly chosen triangle; the density may jump across the diagonal. Service times have mean 1/μᵢ. For lognormal service, σ² = log(1 + CV²) and the log mean is log(1/μᵢ) − σ²/2.</li>
+      <li><strong>Travel.</strong> Travel distance is the Euclidean distance from a local customer's sampled origin to the clinic selected by the policy; it is not multiplied by α or κ. The bottom and top averages classify local customers by origin, not destination. The all-customer mean divides the sum of local travel distances by all post-warm-up arrivals, assigning zero model travel to fixed and flexible customers, who have no sampled spatial origin. The all-local mean divides by the number of local arrivals only.</li>
+      <li><strong>Travel optimization.</strong> The panel updates immediately from the current input rates, independently of the simulation. It minimizes E[destination distance | local] over spatial assignments and flexible flows satisfying λL qᵢ + λF θᵢ + fᵢ ≤ μᵢ and f₁ + f₂ = λC. For two clinics, the optimal local share q₁ is the nearest-clinic share clipped to the feasible interval; the corresponding distance-difference threshold is found from the continuous spatial distribution. The per-arrival objective multiplies the local mean by λL / (λL + λC + λF). Infeasible problems are shown as infeasible; no confidence interval is attached to a deterministic optimization value. The comparison with simulated travel is shown only when the simulation uses the same arrival rates, capacities, spatial demand, and fixed-destination probabilities.</li>
+      <li><strong>Confidence intervals.</strong> With at least two valid independent replications, the reported interval is the mean of replication estimates ± t₀.₉₇₅,R−1 × sample standard deviation / √R. Total-queue intervals use each replication's total. No interval is estimated from dependent time samples. Undefined waiting, allocation or travel estimates from an empty cohort are omitted and their valid replication count is shown. A triangle with no local arrivals is undefined, rather than assigned distance zero. Intervals are not clipped at zero.</li>
+      <li><strong>Checks.</strong> Full-run flow balance checks arrivals = departures by T + patients still in the system at T. A separate finite-window waiting-area check accounts for patients arriving before warm-up and waits extending past T. Travel checks reconcile origin counts and distance sums. These checks do not assume steady state.</li>
+    </ul></details>
+  </section>
+  <footer>All calculations run in this browser. No external libraries or network connection are required. Long or overloaded runs describe finite-horizon behavior; they need not represent steady state.</footer>
+</main>
+<script id="geometry-source">(function (root) {
+  'use strict';
+
+  const SQRT2 = Math.SQRT2;
+  const EPS = 1e-11;
+  const clamp01 = value => Math.max(0, Math.min(1, Number(value)));
+
+  /*
+   * The square is split by x+y=1. Clinic 1 is at (0,0), clinic 2 at
+   * (1,1). The lower-left and upper-right triangles carry masses p and
+   * 1-p and have constant densities 2p and 2(1-p), respectively.
+   *
+   * For t>=0, upperTriangleFraction(t) is the conditional probability
+   * d_1(Y)-d_2(Y)<=t within the upper-right triangle. Put s=x+y-1 and
+   * v=x-y. The relevant hyperbola has
+   * s=t*sqrt(1/2+v^2/(2-t^2)); the square edge is s=1-|v|. Their
+   * intersection is v_*=(2-t^2)/(2(1+t)). Integrating these two
+   * cross-sections gives this exact expression (up to rounding).
+   */
+  function upperTriangleFraction(t) {
+    if (t <= 0) return 0;
+    if (t >= SQRT2) return 1;
+    const b2 = Math.max(0, 2 - t * t);
+    if (b2 < 1e-14) return 1;
+    const b = Math.sqrt(b2);
+    const a = b / SQRT2;
+    const v = b2 / (2 * (1 + t));
+    const integral = 0.5 * (v * Math.hypot(v, a) +
+      a * a * Math.asinh(v / a));
+    const area = (t / b) * integral + 0.5 * (1 - v) * (1 - v);
+    return clamp01(2 * area);
+  }
+
+  function distanceDifferenceCDF(t, demandP1) {
+    const p = clamp01(demandP1);
+    if (t <= -SQRT2) return 0;
+    if (t >= SQRT2) return 1;
+    return t < 0 ? p * (1 - upperTriangleFraction(-t)) :
+      p + (1 - p) * upperTriangleFraction(t);
+  }
+
+  // Clinic 1 minimizes d_i+delta_i exactly when d_1-d_2<=delta_2-delta_1.
+  function massMap(delta, demandP1) {
+    const q1 = distanceDifferenceCDF(Number(delta[1]) - Number(delta[0]), demandP1);
+    return [q1, 1 - q1];
+  }
+
+  function quantile(target, p) {
+    if (target <= 0) return -SQRT2;
+    if (target >= 1) return SQRT2;
+    if (Math.abs(target - p) <= EPS) return 0;
+    let lo = -SQRT2;
+    let hi = SQRT2;
+    for (let iteration = 0; iteration < 70; iteration += 1) {
+      const mid = 0.5 * (lo + hi);
+      if (distanceDifferenceCDF(mid, p) < target) lo = mid;
+      else hi = mid;
+    }
+    return 0.5 * (lo + hi);
+  }
+
+  function calibrate(settings) {
+    const inputRates = settings.rates || {};
+    const rates = {
+      local: Number(inputRates.local),
+      flexible: Number(inputRates.flexible),
+      fixed: Number(inputRates.fixed)
+    };
+    const mu = (settings.mu || []).map(Number);
+    const theta1 = Number(settings.fixedP1);
+    const p = Number(settings.demandP1);
+    const reasons = [];
+    if (mu.length !== 2 || mu.some(value => !Number.isFinite(value) || value <= 0)) {
+      reasons.push('Both service rates must be positive finite numbers.');
+    }
+    if (Object.values(rates).some(value => !Number.isFinite(value) || value < 0)) {
+      reasons.push('Arrival rates must be nonnegative finite numbers.');
+    }
+    if (!Number.isFinite(theta1) || theta1 < 0 || theta1 > 1 ||
+        !Number.isFinite(p) || p < 0 || p > 1) {
+      reasons.push('Demand mass and fixed-destination probability must lie between 0 and 1.');
+    }
+    if (reasons.length) {
+      return { feasible: false, reasons, delta: [0, 0], invalidInput: true };
+    }
+
+    const totalRate = rates.local + rates.flexible + rates.fixed;
+    const totalCapacity = mu[0] + mu[1];
+    const fraction = totalRate > 0 ? {
+      local: rates.local / totalRate,
+      flexible: rates.flexible / totalRate,
+      fixed: rates.fixed / totalRate
+    } : { local: 0, flexible: 0, fixed: 0 };
+    const capacityShares = mu.map(value => value / totalCapacity);
+    const theta = [theta1, 1 - theta1];
+    const residual = capacityShares.map((share, i) => share - fraction.fixed * theta[i]);
+    const nearestShares = [p, 1 - p];
+    let delta = [0, 0];
+    let targetShares = nearestShares.slice();
+    let targetBounds = [0, 1];
+
+    residual.forEach((value, i) => {
+      if (value < -EPS) {
+        reasons.push('At the critical benchmark, fixed arrivals alone exceed clinic ' +
+          (i + 1) + '\u2019s capacity share. Allocation-centered static calibration is infeasible.');
+      }
+    });
+
+    if (!reasons.length && fraction.local > EPS) {
+      const lower = Math.max(0, 1 - residual[1] / fraction.local);
+      const upper = Math.min(1, residual[0] / fraction.local);
+      targetBounds = [lower, upper];
+      if (lower > upper + EPS) {
+        reasons.push('No local allocation satisfies both critical capacity constraints.');
+      } else {
+        const q1 = Math.max(lower, Math.min(upper, p));
+        const threshold = quantile(q1, p);
+        delta = threshold < 0 ? [-threshold, 0] : [0, threshold];
+        targetShares = massMap(delta, p);
+      }
+    }
+
+    const flexibleResidual = residual.map((value, i) =>
+      value - fraction.local * targetShares[i]);
+    const criticalLoad = capacityShares.map((share, i) =>
+      (fraction.fixed * theta[i] + fraction.local * targetShares[i]) / share);
+    const targetQ1 = fraction.local > EPS && !reasons.length ?
+      Math.max(targetBounds[0], Math.min(targetBounds[1], p)) : p;
+    return {
+      feasible: reasons.length === 0,
+      reasons,
+      delta,
+      nearestShares,
+      targetShares,
+      targetBounds,
+      fraction,
+      capacityShares,
+      residual,
+      flexibleResidual,
+      criticalLoad,
+      offeredLoad: totalRate / totalCapacity,
+      totalRate,
+      totalCapacity,
+      calibrationError: Math.abs(targetShares[0] - targetQ1),
+      method: 'Analytic triangular distance-difference CDF with bisection; critical arrival fractions.',
+      noLocalArrivals: rates.local === 0,
+      criticalScale: totalRate > 0 ? totalCapacity / totalRate : 0
+    };
+  }
+
+  /*
+   * Allocation-centered routing uses the travel program at the entered
+   * rates. Keep calibrate() above as the distinct critical-load benchmark
+   * used by the theorem comparison. Reusing a complete travelBounds solve
+   * keeps the routing weights and displayed entered-rate optimum identical.
+   * residual and flexibleResidual are capacity rates per total arrival rate;
+   * criticalLoad is retained for compatibility and now reports the actual
+   * fixed-plus-local utilization, before flexible arrivals are allocated.
+   */
+  function allocationCalibration(settings, travelBoundsOptional) {
+    const s = settings || {};
+    const inputRates = s.rates || {};
+    const rates = {
+      local: Number(inputRates.local),
+      flexible: Number(inputRates.flexible),
+      fixed: Number(inputRates.fixed)
+    };
+    const mu = Array.isArray(s.mu) ? s.mu.map(Number) : [];
+    const theta1 = Number(s.fixedP1);
+    const p = Number(s.demandP1);
+    const totalRate = rates.local + rates.flexible + rates.fixed;
+    const totalCapacity = mu.length === 2 ? mu[0] + mu[1] : NaN;
+    const reasons = [];
+    if (mu.length !== 2 || mu.some(value => !Number.isFinite(value) || value <= 0) ||
+        !Number.isFinite(totalCapacity)) {
+      reasons.push('Both service rates and their total must be positive finite numbers.');
+    }
+    if (Object.values(rates).some(value => !Number.isFinite(value) || value < 0) ||
+        !Number.isFinite(totalRate)) {
+      reasons.push('Arrival rates must be nonnegative finite numbers, with a finite total.');
+    }
+    if (!Number.isFinite(theta1) || theta1 < 0 || theta1 > 1 ||
+        !Number.isFinite(p) || p < 0 || p > 1) {
+      reasons.push('Demand mass and fixed-destination probability must lie between 0 and 1.');
+    }
+    if (!reasons.length && !Number.isFinite(totalRate / totalCapacity)) {
+      reasons.push('The offered load exceeds the numerical range of this calibration.');
+    }
+    if (reasons.length) {
+      return {
+        feasible: false, reasons, invalidInput: true,
+        delta: [0, 0], nearestShares: [0.5, 0.5], targetShares: [0.5, 0.5],
+        targetBounds: [0, 1], fraction: { local: 0, flexible: 0, fixed: 0 },
+        capacityShares: [0.5, 0.5], residual: [0, 0], flexibleResidual: [0, 0],
+        criticalLoad: [0, 0], clinicLoads: [0, 0], clinicUtilization: [0, 0],
+        offeredLoad: null, totalRate: Number.isFinite(totalRate) && totalRate >= 0 ? totalRate : null,
+        totalCapacity: Number.isFinite(totalCapacity) && totalCapacity > 0 ? totalCapacity : null,
+        calibrationError: null, noLocalArrivals: rates.local === 0,
+        criticalScale: null, rateBasis: 'entered-rates',
+        method: 'Entered-rate static travel optimization.'
+      };
+    }
+
+    const fraction = totalRate > 0 ? {
+      local: rates.local / totalRate,
+      flexible: rates.flexible / totalRate,
+      fixed: rates.fixed / totalRate
+    } : { local: 0, flexible: 0, fixed: 0 };
+    const capacityShares = mu.map(value => value / totalCapacity);
+    const nearestShares = [p, 1 - p];
+    const fixedRates = [rates.fixed * theta1, rates.fixed * (1 - theta1)];
+    const remainingAfterFixed = mu.map((capacity, i) => capacity - fixedRates[i]);
+    const bounds = travelBoundsOptional || travelBounds(s);
+    const entered = bounds && bounds.enteredRates;
+    const feasible = totalRate === 0 || Boolean(entered && entered.feasible);
+    const delta = feasible && rates.local > 0 && Array.isArray(entered.delta) ? entered.delta.slice() : [0, 0];
+    const targetShares = feasible && Array.isArray(entered && entered.targetShares) ?
+      entered.targetShares.slice() : nearestShares.slice();
+    const targetBounds = feasible && Array.isArray(entered && entered.targetBounds) ?
+      entered.targetBounds.slice() : [0, 1];
+    const remainingAfterLocal = remainingAfterFixed.map((value, i) => value - rates.local * targetShares[i]);
+    const clinicLoads = feasible && Array.isArray(entered && entered.clinicLoads) ?
+      entered.clinicLoads.slice() : fixedRates.map((value, i) => value + rates.local * targetShares[i]);
+    const targetQ1 = feasible && rates.local > 0 ?
+      Math.max(targetBounds[0], Math.min(targetBounds[1], p)) : p;
+    return {
+      feasible,
+      reasons: feasible ? [] : entered && Array.isArray(entered.reasons) && entered.reasons.length ?
+        entered.reasons.slice() : ['The entered-rate static allocation is unavailable or infeasible.'],
+      delta,
+      nearestShares,
+      targetShares,
+      targetBounds,
+      fraction,
+      capacityShares,
+      residual: totalRate > 0 ? remainingAfterFixed.map(value => value / totalRate) : capacityShares.slice(),
+      flexibleResidual: totalRate > 0 ? remainingAfterLocal.map(value => value / totalRate) : capacityShares.slice(),
+      criticalLoad: fixedRates.map((value, i) => (value + rates.local * targetShares[i]) / mu[i]),
+      clinicLoads,
+      clinicUtilization: clinicLoads.map((value, i) => value / mu[i]),
+      offeredLoad: totalRate / totalCapacity,
+      totalRate,
+      totalCapacity,
+      calibrationError: feasible ? Math.abs(targetShares[0] - targetQ1) : null,
+      method: 'Analytic triangular distance-difference CDF with bisection; entered arrival and service rates.',
+      noLocalArrivals: rates.local === 0,
+      criticalScale: totalRate > 0 ? totalCapacity / totalRate : 0,
+      rateBasis: 'entered-rates'
+    };
+  }
+
+  function sampleLocation(rng, demandP1) {
+    const triangle = rng() < demandP1 ? 0 : 1;
+    let x = rng();
+    let y = rng();
+    if (x + y > 1) {
+      x = 1 - x;
+      y = 1 - y;
+    }
+    if (triangle === 1) {
+      x = 1 - x;
+      y = 1 - y;
+    }
+    return { x, y, triangle };
+  }
+
+  /*
+   * Translate the entered-rate static travel program's dual weights into
+   * ordinary-greedy score offsets: U_i-min_j(U_j) = alpha*delta_i, where
+   * U_i=N_i/mu_i and min_i(delta_i)=0. This is a rate-dependent static
+   * benchmark, not a theorem about the finite-load stochastic queue.
+   * queueFloor is the patient count implied by those score offsets; it
+   * counts patients waiting OR in service, not additional mean waiting.
+   * The separately returned critical targets use proportional rescaling
+   * to full capacity, corresponding to the paper's heavy-traffic targets.
+   * An optional supplied solve must be the full travelBounds(settings)
+   * result, containing enteredRates and critical, not calibrate(settings).
+   */
+  function greedyDelayTargets(settings, travelBoundsOptional) {
+    const s = settings || {};
+    const inputRates = s.rates || {};
+    const rates = ['local', 'flexible', 'fixed'].map(key => Number(inputRates[key]));
+    const mu = Array.isArray(s.mu) ? s.mu.map(Number) : [];
+    const alpha = Number(s.alpha);
+    const p = Number(s.demandP1);
+    const theta1 = Number(s.fixedP1);
+    const reasons = [];
+    const totalRate = rates.reduce((sum, value) => sum + value, 0);
+    const totalCapacity = mu.reduce((sum, value) => sum + value, 0);
+    const offeredLoad = Number.isFinite(totalRate) && totalRate >= 0 &&
+      Number.isFinite(totalCapacity) && totalCapacity > 0 &&
+      Number.isFinite(totalRate / totalCapacity) ? totalRate / totalCapacity : null;
+
+    function unavailable(explanations, rateBasis = 'entered-rates', load = offeredLoad) {
+      return {
+        available: false, reasons: explanations.slice(), delta: null,
+        delayOffsets: null, headcountOffsets: null, queueFloor: null,
+        delayGap12: null, offeredLoad: load, rateBasis,
+        targetShares: null, clinicLoads: null, targetBounds: null
+      };
+    }
+
+    function unavailableBoth(explanations) {
+      return {
+        ...unavailable(explanations),
+        critical: unavailable(explanations, 'critical-capacity', null)
+      };
+    }
+
+    if (rates.some(value => !Number.isFinite(value) || value < 0) || !Number.isFinite(totalRate)) {
+      reasons.push('Arrival rates must be finite and nonnegative, with a finite total.');
+    }
+    if (mu.length !== 2 || mu.some(value => !Number.isFinite(value) || value <= 0) ||
+        !Number.isFinite(totalCapacity) || totalCapacity <= 0) {
+      reasons.push('Both service rates and their total must be positive and finite.');
+    }
+    if (!Number.isFinite(p) || p < 0 || p > 1 ||
+        !Number.isFinite(theta1) || theta1 < 0 || theta1 > 1) {
+      reasons.push('Demand mass and fixed-destination probability must lie between 0 and 1.');
+    }
+    if (!Number.isFinite(alpha) || alpha <= 0) {
+      reasons.push('The travel weight must be positive and finite.');
+    }
+    if (!reasons.length && offeredLoad === null) {
+      reasons.push('The offered load exceeds the numerical range of this prediction.');
+    }
+    if (reasons.length) return unavailableBoth(reasons);
+    if (totalRate === 0) return unavailableBoth(['No arrivals: a per-arrival delay benchmark is undefined.']);
+    if (rates[0] === 0) {
+      return unavailableBoth(['There are no local arrivals, so a travel-induced ordinary-greedy delay target is not applicable.']);
+    }
+
+    const bounds = travelBoundsOptional || travelBounds(s);
+    function fromBound(bound, rateBasis) {
+      const label = rateBasis === 'entered-rates' ? 'entered-rate' : 'critical-capacity';
+      const load = rateBasis === 'entered-rates' ? offeredLoad :
+        (bound && Number.isFinite(bound.comparisonRate) ? bound.comparisonRate / totalCapacity : null);
+      if (!bound || !bound.feasible || !bound.applicable) {
+        return unavailable(bound && bound.reasons && bound.reasons.length ? bound.reasons :
+          ['The ' + label + ' static allocation is unavailable or infeasible.'], rateBasis, load);
+      }
+      if (!Array.isArray(bound.delta) || bound.delta.length !== 2 ||
+          bound.delta.some(value => !Number.isFinite(value) || value < 0) ||
+          Math.abs(Math.min(...bound.delta)) > EPS) {
+        return unavailable(['The ' + label + ' clinic weights must be finite, nonnegative, and normalized to have minimum zero.'], rateBasis, load);
+      }
+      for (const key of ['targetShares', 'clinicLoads', 'targetBounds']) {
+        if (!Array.isArray(bound[key]) || bound[key].length !== 2 ||
+            bound[key].some(value => !Number.isFinite(value))) {
+          return unavailable(['The ' + label + ' static allocation must provide finite clinic shares, loads, and share bounds.'], rateBasis, load);
+        }
+      }
+      const delta = bound.delta.slice();
+      const delayOffsets = delta.map(value => alpha * value);
+      const headcountOffsets = delayOffsets.map((value, i) => mu[i] * value);
+      const queueFloor = headcountOffsets[0] + headcountOffsets[1];
+      const delayGap12 = delayOffsets[0] - delayOffsets[1];
+      if (![...delayOffsets, ...headcountOffsets, queueFloor, delayGap12].every(Number.isFinite)) {
+        return unavailable(['The delay target exceeds the numerical range of this prediction.'], rateBasis, load);
+      }
+      return {
+        available: true, reasons: [], delta, delayOffsets, headcountOffsets,
+        queueFloor, delayGap12, offeredLoad: load, rateBasis,
+        targetShares: bound.targetShares.slice(), clinicLoads: bound.clinicLoads.slice(),
+        targetBounds: bound.targetBounds.slice()
+      };
+    }
+    return {
+      ...fromBound(bounds.enteredRates, 'entered-rates'),
+      critical: fromBound(bounds.critical, 'critical-capacity')
+    };
+  }
+
+  // Conditional mean distance to the nearest clinic. Reflection makes this
+  // identical on both demand triangles, independently of their masses.
+  const NEAREST_MEAN = (SQRT2 + Math.log(1 + SQRT2)) / (3 * SQRT2);
+
+  function integrateSimpson(fn, lower, upper, tolerance) {
+    if (upper <= lower) return 0;
+    const mid = (lower + upper) / 2;
+    const fl = fn(lower), fm = fn(mid), fu = fn(upper);
+    const initial = (upper - lower) * (fl + 4 * fm + fu) / 6;
+    function split(a, b, fa, fc, fb, whole, tol, depth) {
+      const c = (a + b) / 2;
+      const leftMid = (a + c) / 2, rightMid = (c + b) / 2;
+      const fLeft = fn(leftMid), fRight = fn(rightMid);
+      const left = (c - a) * (fa + 4 * fLeft + fc) / 6;
+      const right = (b - c) * (fc + 4 * fRight + fb) / 6;
+      const correction = left + right - whole;
+      if (depth <= 0 || Math.abs(correction) <= 15 * tol) {
+        return left + right + correction / 15;
+      }
+      return split(a, c, fa, fLeft, fc, left, tol / 2, depth - 1) +
+        split(c, b, fc, fRight, fb, right, tol / 2, depth - 1);
+    }
+    return split(lower, upper, fl, fm, fu, initial, tolerance, 24);
+  }
+
+  function meanAssignedDistance(threshold, demandP1) {
+    const a = Math.min(SQRT2, Math.abs(threshold));
+    if (a === 0) return NEAREST_MEAN;
+    // E[D 1{D<=a}] = a P(D<=a) - integral_0^a P(D<=t) dt.
+    const extra = a * upperTriangleFraction(a) -
+      integrateSimpson(upperTriangleFraction, 0, a, 1e-12);
+    const divertedTriangleMass = threshold < 0 ? demandP1 : 1 - demandP1;
+    return NEAREST_MEAN + divertedTriangleMass * Math.max(0, extra);
+  }
+
+  /*
+   * These are long-run capacity-constrained static travel benchmarks, not
+   * sample-path bounds on finite simulated travel. Flexible patients need
+   * no geographic travel in this objective. Their rate must fit the total
+   * residual capacity after local and fixed flows have been assigned.
+   *
+   * enteredRates uses the entered arrival rates. critical rescales all
+   * three rates in their entered proportions until total arrivals equal
+   * total service capacity, matching calibrate() and the paper benchmark.
+   */
+  function travelBounds(settings, criticalCalibrationOptional) {
+    const calibration = criticalCalibrationOptional || calibrate(settings);
+    const inputRates = settings.rates || {};
+    const rates = {
+      local: Number(inputRates.local),
+      flexible: Number(inputRates.flexible),
+      fixed: Number(inputRates.fixed)
+    };
+    const mu = (settings.mu || []).map(Number);
+    const theta1 = Number(settings.fixedP1);
+    const p = Number(settings.demandP1);
+    const theta = [theta1, 1 - theta1];
+    const totalRate = rates.local + rates.flexible + rates.fixed;
+    const totalCapacity = mu[0] + mu[1];
+    const inputs = { rates: { ...rates }, mu: mu.slice(), fixedP1: theta1, demandP1: p };
+
+    function unavailable(reasons, rateBasis, feasible) {
+      return {
+        feasible: Boolean(feasible), applicable: false, reasons: reasons.slice(),
+        localMean: null, perArrivalMean: null, travelRate: null,
+        delta: null, targetShares: null, threshold: null,
+        targetBounds: null, flexibleResidual: null,
+        dualLocalMean: null, optimalityGap: null, primalResidual: null,
+        rateBasis, comparisonRate: null
+      };
+    }
+
+    if (calibration.invalidInput) {
+      return {
+        enteredRates: unavailable(calibration.reasons, 'entered-rates', false),
+        critical: unavailable(calibration.reasons, 'critical-capacity', false),
+        inputs
+      };
+    }
+    if (totalRate === 0) {
+      const explanation = ['No arrivals: a per-arrival travel benchmark is undefined.'];
+      return {
+        enteredRates: unavailable(explanation, 'entered-rates', true),
+        critical: unavailable(explanation, 'critical-capacity', true),
+        inputs
+      };
+    }
+
+    // Flexible flow has zero travel cost, so its split is generally not
+    // unique. This choice distributes it in proportion to the residual
+    // capacities and supplies a feasible solution of the full flow program.
+    function capacityAllocation(flow, shares) {
+      const fixedRates = theta.map(value => flow.fixed * value);
+      const localRates = shares.map(value => flow.local * value);
+      const remaining = mu.map((value, i) => Math.max(0, value - fixedRates[i] - localRates[i]));
+      const residualTotal = remaining[0] + remaining[1];
+      const flexibleRates = remaining.map(value => residualTotal > 0 ? flow.flexible * value / residualTotal : 0);
+      const clinicLoads = mu.map((value, i) => fixedRates[i] + localRates[i] + flexibleRates[i]);
+      const capacitySlack = mu.map((value, i) => value - clinicLoads[i]);
+      return { fixedRates, localRates, flexibleRates, clinicLoads, capacitySlack };
+    }
+
+    function evaluate(flow, rateBasis, existingCalibration) {
+      const flowTotal = flow.local + flow.flexible + flow.fixed;
+      const tolerance = EPS * Math.max(totalCapacity, flowTotal, 1);
+      const reasons = [];
+      if (flowTotal > totalCapacity + tolerance) {
+        reasons.push('Total arrivals exceed total service capacity; no feasible capacity-constrained static allocation exists.');
+      }
+      const remainingAfterFixed = mu.map((capacity, i) => capacity - flow.fixed * theta[i]);
+      remainingAfterFixed.forEach((value, i) => {
+        if (value < -tolerance) {
+          reasons.push('Fixed arrivals alone exceed clinic ' + (i + 1) + '\u2019s service capacity.');
+        }
+      });
+      if (existingCalibration && !existingCalibration.feasible) {
+        reasons.push(...existingCalibration.reasons);
+      }
+      if (reasons.length) return unavailable(reasons, rateBasis, false);
+
+      if (flow.local === 0) {
+        return {
+          feasible: true, applicable: true, reasons: [], noLocalArrivals: true,
+          localMean: null, perArrivalMean: 0, travelRate: 0,
+          delta: [0, 0], targetShares: [p, 1 - p], threshold: 0,
+          targetBounds: [0, 1], flexibleResidual: remainingAfterFixed,
+          dualLocalMean: null, optimalityGap: 0,
+          primalResidual: {
+            clinic: remainingAfterFixed.map(value => Math.max(0, -value)),
+            flexibleShortfall: Math.max(0, flow.flexible - remainingAfterFixed[0] - remainingAfterFixed[1])
+          },
+          ...capacityAllocation(flow, [p, 1 - p]),
+          rateBasis, comparisonRate: flowTotal
+        };
+      }
+
+      const lower = Math.max(0, 1 - remainingAfterFixed[1] / flow.local);
+      const upper = Math.min(1, remainingAfterFixed[0] / flow.local);
+      if (lower > upper + EPS) {
+        return unavailable(['No local allocation satisfies both clinic capacity constraints.'], rateBasis, false);
+      }
+      const desiredQ1 = Math.max(lower, Math.min(upper, p));
+      const threshold = quantile(desiredQ1, p);
+      const delta = threshold < 0 ? [-threshold, 0] : [0, threshold];
+      const targetShares = massMap(delta, p);
+      const localMean = meanAssignedDistance(threshold, p);
+      const flexibleResidual = remainingAfterFixed.map((value, i) => value - flow.local * targetShares[i]);
+      const capacityBounds = remainingAfterFixed.map(value => value / flow.local);
+      // For the local assignment LP, dual_i=delta_i>=0. The expected
+      // weighted minimum is localMean+sum(delta_i Q_i); subtracting
+      // sum(delta_i capacityBound_i) gives its dual objective.
+      const dualLocalMean = localMean + delta.reduce((sum, value, i) =>
+        sum + value * (targetShares[i] - capacityBounds[i]), 0);
+      return {
+        feasible: true, applicable: true, reasons: [], noLocalArrivals: false,
+        localMean,
+        perArrivalMean: flow.local / flowTotal * localMean,
+        travelRate: flow.local * localMean,
+        delta, targetShares, threshold, targetBounds: [lower, upper],
+        flexibleResidual,
+        dualLocalMean,
+        optimalityGap: localMean - dualLocalMean,
+        primalResidual: {
+          clinic: flexibleResidual.map(value => Math.max(0, -value)),
+          flexibleShortfall: Math.max(0, flow.flexible - flexibleResidual[0] - flexibleResidual[1])
+        },
+        ...capacityAllocation(flow, targetShares),
+        rateBasis, comparisonRate: flowTotal
+      };
+    }
+
+    const scale = totalCapacity / totalRate;
+    const criticalRates = {
+      local: rates.local * scale,
+      flexible: rates.flexible * scale,
+      fixed: rates.fixed * scale
+    };
+    return {
+      enteredRates: evaluate(rates, 'entered-rates', null),
+      critical: evaluate(criticalRates, 'critical-capacity', calibration),
+      inputs,
+      method: 'Analytic triangular mass map and deterministic adaptive Simpson travel integral (absolute integration tolerance 1e-12).',
+      nearestLocalMean: NEAREST_MEAN
+    };
+  }
+
+  root.ClinicGeometry = {
+    calibrate,
+    allocationCalibration,
+    massMap,
+    sampleLocation,
+    distanceDifferenceCDF,
+    greedyDelayTargets,
+    travelBounds
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+</script>
+<script id="statistics-source">(function (root) {
+  'use strict';
+
+  // Confidence intervals use independent replication means. Observations within
+  // a single simulated queue are deliberately not treated as independent data.
+  var metricNames = [
+    'q1', 'q2', 'qTotal', 'n1', 'n2', 'nTotal',
+    'wait1', 'wait2', 'waitAll', 'serviceMean', 'totalCost', 'util1', 'util2',
+    'travelLocal', 'travelAll', 'travelBottom', 'travelTop'
+  ];
+  var normal975 = 1.959963984540054;
+  var criticalCache = Object.create(null);
+
+  function finiteNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value);
+  }
+
+  // Lanczos approximation, with reflection for small positive arguments.
+  function logGamma(z) {
+    var coefficients = [
+      676.5203681218851, -1259.1392167224028, 771.32342877765313,
+      -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+      9.9843695780195716e-6, 1.5056327351493116e-7
+    ];
+    if (z < 0.5) {
+      return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
+    }
+    z -= 1;
+    var sum = 0.99999999999980993;
+    for (var i = 0; i < coefficients.length; i += 1) {
+      sum += coefficients[i] / (z + i + 1);
+    }
+    var t = z + coefficients.length - 0.5;
+    return 0.9189385332046727 + (z + 0.5) * Math.log(t) - t + Math.log(sum);
+  }
+
+  // Modified Lentz continued fraction for the regularized incomplete beta.
+  function betaFraction(a, b, x) {
+    var tiny = 1e-300;
+    var qab = a + b;
+    var qap = a + 1;
+    var qam = a - 1;
+    var c = 1;
+    var d = 1 - qab * x / qap;
+    if (Math.abs(d) < tiny) d = tiny;
+    d = 1 / d;
+    var h = d;
+    for (var m = 1; m <= 400; m += 1) {
+      var m2 = 2 * m;
+      var aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+      d = 1 + aa * d;
+      if (Math.abs(d) < tiny) d = tiny;
+      c = 1 + aa / c;
+      if (Math.abs(c) < tiny) c = tiny;
+      d = 1 / d;
+      h *= d * c;
+      aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+      d = 1 + aa * d;
+      if (Math.abs(d) < tiny) d = tiny;
+      c = 1 + aa / c;
+      if (Math.abs(c) < tiny) c = tiny;
+      d = 1 / d;
+      var delta = d * c;
+      h *= delta;
+      if (Math.abs(delta - 1) < 3e-14) return h;
+    }
+    throw new Error('Student t probability calculation did not converge.');
+  }
+
+  function regularizedBeta(x, a, b) {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    var factor = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b)
+      + a * Math.log(x) + b * Math.log1p(-x));
+    if (x < (a + 1) / (a + b + 2)) {
+      return factor * betaFraction(a, b, x) / a;
+    }
+    return 1 - factor * betaFraction(b, a, 1 - x) / b;
+  }
+
+  // Upper 97.5% Student t quantile, for a two-sided 95% interval.
+  function t975(df) {
+    if (df === Infinity) return normal975;
+    if (!finiteNumber(df) || df <= 0) {
+      throw new RangeError('Student t degrees of freedom must be positive.');
+    }
+    if (criticalCache[df] !== undefined) return criticalCache[df];
+    var critical;
+    if (df >= 100000) {
+      // The first three inverse-df terms avoid log-gamma cancellation at large df.
+      var z = normal975;
+      var z2 = z * z;
+      critical = z + z * (z2 + 1) / (4 * df)
+        + z * (5 * z2 * z2 + 16 * z2 + 3) / (96 * df * df)
+        + z * (3 * z2 * z2 * z2 + 19 * z2 * z2 + 17 * z2 - 15)
+          / (384 * df * df * df);
+    } else {
+      // For t > 0, P(T_df > t) = I_{df/(df+t^2)}(df/2, 1/2) / 2.
+      // We solve the equivalent incomplete-beta equation I = 0.05.
+      function twiceUpperTail(t) {
+        return regularizedBeta(1 / (1 + t * t / df), df / 2, 0.5);
+      }
+      var lower = 0;
+      var upper = 2;
+      while (twiceUpperTail(upper) > 0.05) {
+        upper *= 2;
+        if (!Number.isFinite(upper)) return Infinity;
+      }
+      for (var i = 0; i < 100; i += 1) {
+        var mid = lower + (upper - lower) / 2;
+        if (twiceUpperTail(mid) > 0.05) lower = mid;
+        else upper = mid;
+        if (upper - lower <= 1e-13 * Math.max(1, mid)) break;
+      }
+      critical = lower + (upper - lower) / 2;
+    }
+    criticalCache[df] = critical;
+    return critical;
+  }
+
+  function confidence95(values) {
+    var n = 0;
+    var mean = 0;
+    var squaredDeviations = 0;
+    (values || []).forEach(function (value) {
+      if (!finiteNumber(value)) return;
+      n += 1;
+      var deviation = value - mean;
+      mean += deviation / n;
+      squaredDeviations += deviation * (value - mean);
+    });
+    if (n === 0) {
+      return { mean: null, sd: null, se: null, low: null, high: null, n: 0, df: 0 };
+    }
+    if (n === 1) {
+      return { mean: mean, sd: null, se: null, low: null, high: null, n: 1, df: 0 };
+    }
+    var sd = Math.sqrt(Math.max(0, squaredDeviations / (n - 1)));
+    var se = sd / Math.sqrt(n);
+    var halfWidth = t975(n - 1) * se;
+    return {
+      mean: mean, sd: sd, se: se,
+      low: mean - halfWidth, high: mean + halfWidth,
+      n: n, df: n - 1
+    };
+  }
+
+  function emptyCounts(includeEnd) {
+    var result = {
+      arrivals: 0,
+      types: [0, 0, 0],
+      allocated: [0, 0],
+      byType: [[0, 0], [0, 0], [0, 0]],
+      departures: [0, 0],
+      localByTriangle: [0, 0],
+      travelDistanceByTriangle: [0, 0]
+    };
+    if (includeEnd) result.endN = [0, 0];
+    else result.waitCount = [0, 0];
+    return result;
+  }
+
+  function addCounts(total, entry) {
+    if (!entry) return;
+    if (finiteNumber(entry.arrivals)) total.arrivals += entry.arrivals;
+    ['types', 'allocated', 'departures', 'endN', 'waitCount', 'localByTriangle', 'travelDistanceByTriangle'].forEach(function (name) {
+      if (!total[name] || !entry[name]) return;
+      for (var i = 0; i < total[name].length; i += 1) {
+        if (finiteNumber(entry[name][i])) total[name][i] += entry[name][i];
+      }
+    });
+    if (entry.byType) {
+      for (var type = 0; type < 3; type += 1) {
+        for (var clinic = 0; clinic < 2; clinic += 1) {
+          var value = entry.byType[type] && entry.byType[type][clinic];
+          if (finiteNumber(value)) total.byType[type][clinic] += value;
+        }
+      }
+    }
+  }
+
+  function emptyMoments() {
+    return { count: 0, mean: 0, m2: 0 };
+  }
+
+  // Pool the individual service durations, preserving both within- and
+  // between-replication variation. Averaging replication SDs is incorrect.
+  function mergeMoments(total, entry) {
+    if (!entry || !entry.count) return;
+    var count = total.count + entry.count;
+    var deviation = entry.mean - total.mean;
+    total.m2 += entry.m2 + deviation * deviation * total.count * entry.count / count;
+    total.mean += deviation * entry.count / count;
+    total.count = count;
+  }
+
+  function reportMoments(moments) {
+    return {
+      count: moments.count,
+      mean: moments.count ? moments.mean : null,
+      sd: moments.count > 1 ? Math.sqrt(Math.max(0, moments.m2 / (moments.count - 1))) : null,
+      m2: moments.m2
+    };
+  }
+
+  function summarize(replications) {
+    if (!Array.isArray(replications)) {
+      throw new TypeError('summarize expects an array of independent replications.');
+    }
+    var names = new Set(metricNames);
+    replications.forEach(function (replication) {
+      if (!replication || !replication.metrics) return;
+      Object.keys(replication.metrics).forEach(function (name) {
+        var value = replication.metrics[name];
+        if (value === null || typeof value === 'number') names.add(name);
+      });
+    });
+    var metrics = Object.create(null);
+    names.forEach(function (name) {
+      metrics[name] = confidence95(replications.map(function (replication) {
+        return replication && replication.metrics && replication.metrics[name];
+      }));
+    });
+    var counts = emptyCounts(true);
+    var observed = emptyCounts(false);
+    var serviceMoments = { all: [emptyMoments(), emptyMoments()], observed: [emptyMoments(), emptyMoments()] };
+    var expectedService = null;
+    replications.forEach(function (replication) {
+      if (!replication) return;
+      addCounts(counts, replication.counts);
+      addCounts(observed, replication.observed);
+      if (replication.serviceTimes) {
+        ['all', 'observed'].forEach(function (cohort) {
+          for (var clinic = 0; clinic < 2; clinic += 1) {
+            mergeMoments(serviceMoments[cohort][clinic], replication.serviceTimes[cohort] && replication.serviceTimes[cohort][clinic]);
+          }
+        });
+        if (!expectedService) expectedService = replication.serviceTimes.expected;
+      }
+    });
+    return {
+      metrics: metrics,
+      counts: counts,
+      observed: observed,
+      serviceTimes: {
+        all: serviceMoments.all.map(reportMoments),
+        observed: serviceMoments.observed.map(reportMoments),
+        expected: expectedService
+      },
+      replications: replications.length
+    };
+  }
+
+  root.ClinicStats = Object.freeze({
+    summarize: summarize,
+    confidence95: confidence95,
+    t975: t975
+  });
+})(globalThis);
+</script>
+<script id="engine-source">(function (root) {
+  'use strict';
+
+  // Event-driven FCFS simulation. Queue length excludes the customer in service;
+  // N includes that customer. All arrival cohorts are drained to observe waits.
+  const TYPE_LOCAL = 0;
+  const TYPE_FLEXIBLE = 1;
+  const TYPE_FIXED = 2;
+  const MAX_EVENTS = 5000000;
+  const UINT_SCALE = 4294967296;
+
+  function mix32(value) {
+    let x = value >>> 0;
+    x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+    x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+    return (x ^ (x >>> 16)) >>> 0;
+  }
+
+  function makeRandom(seed) {
+    let state = seed >>> 0;
+    return function () {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      // Open interval (0,1), so exponentials and Box-Muller are always finite.
+      return (((t ^ (t >>> 14)) >>> 0) + 0.5) / UINT_SCALE;
+    };
+  }
+
+  function normalGenerator(random) {
+    let spare = null;
+    return function () {
+      if (spare !== null) {
+        const answer = spare;
+        spare = null;
+        return answer;
+      }
+      const r = Math.sqrt(-2 * Math.log(random()));
+      const theta = 2 * Math.PI * random();
+      spare = r * Math.sin(theta);
+      return r * Math.cos(theta);
+    };
+  }
+
+  function finiteNumber(value, label, minimum, strict) {
+    const x = Number(value);
+    if (!Number.isFinite(x) || (strict ? x <= minimum : x < minimum)) {
+      throw new Error(label + ' must be a finite number ' + (strict ? 'greater than ' : 'at least ') + minimum + '.');
+    }
+    return x;
+  }
+
+  function probability(value, label) {
+    const x = finiteNumber(value, label, 0, false);
+    if (x > 1) throw new Error(label + ' must be between 0 and 1.');
+    return x;
+  }
+
+  function meanOrNull(sum, count) {
+    return count ? sum / count : null;
+  }
+
+  function emptyMoments() {
+    return { count: 0, mean: 0, m2: 0 };
+  }
+
+  function recordMoment(moments, value) {
+    moments.count++;
+    const deviation = value - moments.mean;
+    moments.mean += deviation / moments.count;
+    moments.m2 += deviation * (value - moments.mean);
+  }
+
+  function reportMoments(moments) {
+    return {
+      count: moments.count,
+      mean: moments.count ? moments.mean : null,
+      sd: moments.count > 1 ? Math.sqrt(Math.max(0, moments.m2 / (moments.count - 1))) : null,
+      m2: moments.m2
+    };
+  }
+
+  function advanceTime(t, increment) {
+    if (!Number.isFinite(increment) || increment <= 0) {
+      throw new Error('A generated interarrival or service time exceeded numerical limits. Use less extreme rates or service variability.');
+    }
+    let next = t + increment;
+    if (next <= t) next = t + 2 * Number.EPSILON * Math.max(1, Math.abs(t));
+    if (!Number.isFinite(next)) throw new Error('A simulated event time exceeded numerical limits.');
+    return next;
+  }
+
+  function runReplication(settings, calibration, repIndex) {
+    settings = settings || {};
+    calibration = calibration || {};
+    repIndex = repIndex == null ? 0 : repIndex;
+    if (!Number.isInteger(repIndex) || repIndex < 0) throw new Error('Replication index must be a nonnegative integer.');
+    const rates = [
+      finiteNumber(settings.rates && settings.rates.local, 'Local arrival rate', 0, false),
+      finiteNumber(settings.rates && settings.rates.flexible, 'Flexible arrival rate', 0, false),
+      finiteNumber(settings.rates && settings.rates.fixed, 'Fixed arrival rate', 0, false)
+    ];
+    const totalRate = rates[0] + rates[1] + rates[2];
+    if (!Number.isFinite(totalRate)) throw new Error('The sum of arrival rates must be finite.');
+    const mu = [
+      finiteNumber(settings.mu && settings.mu[0], 'Clinic 1 service rate', 0, true),
+      finiteNumber(settings.mu && settings.mu[1], 'Clinic 2 service rate', 0, true)
+    ];
+    if (mu.some(function (x) { return !Number.isFinite(1 / x); })) throw new Error('Service rates are too small for numerical simulation.');
+    const fixedP1 = probability(settings.fixedP1, 'Fixed-patient probability for clinic 1');
+    const demandP1 = probability(settings.demandP1, 'Demand probability in the lower-left triangle');
+    const alpha = finiteNumber(settings.alpha, 'Travel coefficient alpha', 0, false);
+    const kappa = finiteNumber(settings.kappa, 'Penalty kappa', 0, false);
+    const duration = finiteNumber(settings.duration, 'Simulation duration', 0, true);
+    const warmupPct = finiteNumber(settings.warmupPct, 'Warm-up percentage', 0, false);
+    if (warmupPct >= 100) throw new Error('Warm-up percentage must be less than 100.');
+    const warmup = duration * warmupPct / 100;
+    const span = duration - warmup;
+    const policy = settings.policy;
+    if (['ac', 'greedy', 'penalized', 'shortest'].indexOf(policy) === -1) throw new Error('Unknown routing policy.');
+    const service = settings.service;
+    if (service !== 'exponential' && service !== 'lognormal') throw new Error('Choose exponential or lognormal service.');
+    const cv = finiteNumber(settings.cv, 'Lognormal coefficient of variation', 0, false);
+    if (!Number.isFinite(cv * cv)) throw new Error('The lognormal coefficient of variation is too large.');
+    const delta = Array.isArray(calibration.delta) ? calibration.delta.map(Number) : [0, 0];
+    if (delta.length !== 2 || delta.some(function (x) { return !Number.isFinite(x); })) throw new Error('Allocation weights must contain two finite values.');
+    const inputSeed = Number(settings.seed);
+    if (!Number.isFinite(inputSeed)) throw new Error('Seed must be a finite number.');
+    const seed = mix32((Math.trunc(inputSeed) >>> 0) ^ Math.imul(repIndex + 1, 0x9e3779b9));
+    const stream = function (id) { return makeRandom(mix32(seed ^ Math.imul(id, 0x85ebca6b))); };
+    const arrivalRandom = stream(1);
+    const typeRandom = stream(2);
+    const locationRandom = stream(3);
+    const fixedRandom = stream(4);
+    const tieRandom = stream(5);
+    const serviceRandom = [stream(6), stream(7)];
+    const normalRandom = [normalGenerator(serviceRandom[0]), normalGenerator(serviceRandom[1])];
+    const sigma = Math.sqrt(Math.log1p(cv * cv));
+    const logMeans = mu.map(function (x) { return Math.log(1 / x) - sigma * sigma / 2; });
+
+    function nextService(i) {
+      return service === 'exponential'
+        ? -Math.log(serviceRandom[i]()) / mu[i]
+        : Math.exp(logMeans[i] + sigma * normalRandom[i]());
+    }
+
+    function emptyCounts() {
+      return {
+        arrivals: 0, types: [0, 0, 0], allocated: [0, 0],
+        byType: [[0, 0], [0, 0], [0, 0]], departures: [0, 0],
+        localByTriangle: [0, 0], travelDistanceByTriangle: [0, 0]
+      };
+    }
+    const counts = emptyCounts();
+    const observed = emptyCounts();
+    observed.waitCount = [0, 0];
+    const n = [0, 0];
+    const departuresAt = [Infinity, Infinity];
+    const queues = [{ items: [], head: 0 }, { items: [], head: 0 }];
+    const waitSum = [0, 0];
+    const areaQ = [0, 0];
+    const areaN = [0, 0];
+    const areaBusy = [0, 0];
+    const overlapWaiting = [0, 0];
+    const carryInWaiting = [0, 0];
+    const carryOutWaiting = [0, 0];
+    const generatedServiceCount = [0, 0];
+    const generatedServiceSum = [0, 0];
+    const allServiceMoments = [emptyMoments(), emptyMoments()];
+    const observedServiceMoments = [emptyMoments(), emptyMoments()];
+    let localTravelSum = 0;
+    let localTravelCount = 0;
+    let travelDistancesValid = true;
+    let events = 0;
+    let drainCompletions = 0;
+    let lastTime = 0;
+    let t = 0;
+    let nextArrival = totalRate ? advanceTime(0, -Math.log(arrivalRandom()) / totalRate) : Infinity;
+
+    const trajectory = [];
+    const sampleTimes = [];
+    let sampleIndex = 0;
+    if (repIndex === 0) {
+      for (let j = 0; j <= 400; j++) sampleTimes.push(duration * j / 400);
+      sampleTimes.push(warmup);
+      sampleTimes.sort(function (a, b) { return a - b; });
+      for (let j = sampleTimes.length - 1; j > 0; j--) {
+        if (sampleTimes[j] === sampleTimes[j - 1]) sampleTimes.splice(j, 1);
+      }
+    }
+
+    function sampleBefore(to, inclusive) {
+      while (sampleIndex < sampleTimes.length && (inclusive ? sampleTimes[sampleIndex] <= to : sampleTimes[sampleIndex] < to)) {
+        trajectory.push({ t: sampleTimes[sampleIndex++], q1: Math.max(0, n[0] - 1), q2: Math.max(0, n[1] - 1), n1: n[0], n2: n[1] });
+      }
+    }
+
+    function integrate(to) {
+      const dt = Math.max(0, Math.min(to, duration) - Math.max(lastTime, warmup));
+      if (dt > 0) {
+        for (let i = 0; i < 2; i++) {
+          areaQ[i] += dt * Math.max(0, n[i] - 1);
+          areaN[i] += dt * n[i];
+          if (n[i]) areaBusy[i] += dt;
+        }
+      }
+      lastTime = to;
+    }
+
+    function popQueue(i) {
+      const queue = queues[i];
+      if (queue.head >= queue.items.length) throw new Error('Internal queue accounting failed.');
+      const job = queue.items[queue.head];
+      queue.items[queue.head++] = null;
+      if (queue.head > 4096 && queue.head * 2 > queue.items.length) {
+        queue.items = queue.items.slice(queue.head);
+        queue.head = 0;
+      }
+      return job;
+    }
+
+    function startService(i, job, now) {
+      const wait = Math.max(0, now - job.arrival);
+      overlapWaiting[i] += Math.max(0, Math.min(now, duration) - Math.max(job.arrival, warmup));
+      if (job.observed) {
+        waitSum[i] += wait;
+        observed.waitCount[i]++;
+        carryOutWaiting[i] += Math.max(0, now - duration);
+      } else {
+        carryInWaiting[i] += Math.max(0, Math.min(now, duration) - warmup);
+      }
+      const serviceTime = nextService(i);
+      generatedServiceCount[i]++;
+      generatedServiceSum[i] += serviceTime;
+      // Record complete service durations for each arrival cohort, including draining.
+      recordMoment(allServiceMoments[i], serviceTime);
+      if (job.observed) recordMoment(observedServiceMoments[i], serviceTime);
+      departuresAt[i] = advanceTime(now, serviceTime);
+    }
+
+    function recordArrival(target, type, i) {
+      target.arrivals++;
+      target.types[type]++;
+      target.allocated[i]++;
+      target.byType[type][i]++;
+    }
+
+    function minimizingClinic(a, b) {
+      // Tolerance only absorbs floating-point roundoff in an otherwise equal score.
+      const tolerance = 8 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
+      return Math.abs(a - b) <= tolerance ? (tieRandom() < 0.5 ? 0 : 1) : (a < b ? 0 : 1);
+    }
+
+    function arrive(now) {
+      const marked = typeRandom() * totalRate;
+      const type = marked < rates[0] ? TYPE_LOCAL : (marked < rates[0] + rates[1] ? TYPE_FLEXIBLE : TYPE_FIXED);
+      let clinic;
+      let distances = null;
+      let originTriangle = null;
+      if (type === TYPE_FIXED) {
+        clinic = fixedRandom() < fixedP1 ? 0 : 1;
+      } else if (type === TYPE_FLEXIBLE) {
+        clinic = minimizingClinic(n[0] / mu[0], n[1] / mu[1]);
+      } else {
+        const lowerTriangle = locationRandom() < demandP1;
+        let x = locationRandom();
+        let y = locationRandom();
+        if (x + y > 1) { x = 1 - x; y = 1 - y; }
+        if (!lowerTriangle) { x = 1 - x; y = 1 - y; }
+        originTriangle = x + y <= 1 ? 0 : 1;
+        distances = [Math.hypot(x, y), Math.hypot(1 - x, 1 - y)];
+        let score0 = n[0] / mu[0];
+        let score1 = n[1] / mu[1];
+        if (policy === 'ac') {
+          score0 += alpha * (distances[0] + delta[0]);
+          score1 += alpha * (distances[1] + delta[1]);
+        } else if (policy === 'greedy') {
+          score0 += alpha * distances[0];
+          score1 += alpha * distances[1];
+        } else if (policy === 'penalized') {
+          score0 = (1 + 2 * kappa) * score0 + alpha * distances[0];
+          score1 = (1 + 2 * kappa) * score1 + alpha * distances[1];
+        }
+        if (!Number.isFinite(score0) || !Number.isFinite(score1)) throw new Error('Routing scores exceeded numerical limits.');
+        clinic = minimizingClinic(score0, score1);
+      }
+      const isObserved = now >= warmup;
+      recordArrival(counts, type, clinic);
+      if (type === TYPE_LOCAL) {
+        const distance = distances[clinic];
+        counts.localByTriangle[originTriangle]++;
+        counts.travelDistanceByTriangle[originTriangle] += distance;
+        travelDistancesValid = travelDistancesValid && Number.isFinite(distance)
+          && distance >= 0 && distance <= Math.SQRT2 + 8 * Number.EPSILON;
+      }
+      if (isObserved) {
+        recordArrival(observed, type, clinic);
+        if (type === TYPE_LOCAL) {
+          localTravelSum += distances[clinic];
+          localTravelCount++;
+          observed.localByTriangle[originTriangle]++;
+          observed.travelDistanceByTriangle[originTriangle] += distances[clinic];
+        }
+      }
+      const job = { arrival: now, observed: isObserved };
+      n[clinic]++;
+      if (n[clinic] === 1) startService(clinic, job, now);
+      else queues[clinic].items.push(job);
+      nextArrival = advanceTime(now, -Math.log(arrivalRandom()) / totalRate);
+    }
+
+    function depart(i, now, draining) {
+      n[i]--;
+      if (draining) drainCompletions++;
+      else {
+        counts.departures[i]++;
+        if (now >= warmup) observed.departures[i]++;
+      }
+      if (n[i]) startService(i, popQueue(i), now);
+      else departuresAt[i] = Infinity;
+    }
+
+    while (true) {
+      const next = Math.min(nextArrival, departuresAt[0], departuresAt[1]);
+      if (next > duration) break;
+      if (++events > MAX_EVENTS) throw new Error('Simulation exceeded 5,000,000 events in one replication. Reduce the duration or arrival rates.');
+      sampleBefore(next, false);
+      integrate(next);
+      t = next;
+      // Completions precede arrivals at the same instant; Poisson ties have probability zero.
+      if (departuresAt[0] <= departuresAt[1] && departuresAt[0] <= nextArrival) depart(0, t, false);
+      else if (departuresAt[1] <= nextArrival) depart(1, t, false);
+      else arrive(t);
+    }
+    integrate(duration);
+    sampleBefore(duration, true);
+    counts.endN = n.slice();
+    t = duration;
+    while (n[0] || n[1]) {
+      if (++events > MAX_EVENTS) throw new Error('Simulation and its final queue drain exceeded 5,000,000 events. Reduce the duration or arrival rates.');
+      const clinic = departuresAt[0] <= departuresAt[1] ? 0 : 1;
+      t = departuresAt[clinic];
+      if (!Number.isFinite(t)) throw new Error('Could not drain the final queues within numerical limits.');
+      depart(clinic, t, true);
+    }
+
+    const flowResidual = counts.allocated.map(function (a, i) { return a - counts.departures[i] - counts.endN[i]; });
+    const littleResidual = areaQ.map(function (a, i) { return a - waitSum[i] - carryInWaiting[i] + carryOutWaiting[i]; });
+    const overlapResidual = areaQ.map(function (a, i) { return a - overlapWaiting[i]; });
+    const countsConsistent = function (value) {
+      return value.types.reduce(function (a, b) { return a + b; }, 0) === value.arrivals
+        && value.allocated[0] + value.allocated[1] === value.arrivals
+        && value.byType.every(function (row, type) { return row[0] + row[1] === value.types[type]; })
+        && [0, 1].every(function (i) { return value.byType[0][i] + value.byType[1][i] + value.byType[2][i] === value.allocated[i]; });
+    };
+    const closeArea = function (residual, i) { return Math.abs(residual) <= 1e-7 * Math.max(1, areaQ[i], waitSum[i], carryInWaiting[i], carryOutWaiting[i]); };
+    const travelLocal = meanOrNull(localTravelSum, localTravelCount);
+    const travelAll = meanOrNull(localTravelSum, observed.arrivals);
+    const travelByTriangle = observed.travelDistanceByTriangle.map(function (sum, i) {
+      return meanOrNull(sum, observed.localByTriangle[i]);
+    });
+    const reconstructedTravel = travelByTriangle.reduce(function (sum, mean, i) {
+      return sum + (mean === null ? 0 : mean * observed.localByTriangle[i]);
+    }, 0);
+    const travelResidual = reconstructedTravel - localTravelSum;
+    const closeTravel = function (residual) { return Math.abs(residual) <= 1e-10 * Math.max(1, localTravelSum); };
+    const triangleCountsConsistent = function (value) {
+      return value.localByTriangle[0] + value.localByTriangle[1] === value.types[TYPE_LOCAL]
+        && value.travelDistanceByTriangle.every(function (sum, i) {
+          return Number.isFinite(sum) && sum >= 0
+            && sum <= Math.SQRT2 * value.localByTriangle[i] + 1e-10 * Math.max(1, sum);
+        });
+    };
+    const travelPassed = travelDistancesValid && triangleCountsConsistent(counts)
+      && triangleCountsConsistent(observed) && localTravelCount === observed.types[TYPE_LOCAL]
+      && observed.localByTriangle.every(function (count, i) { return count <= counts.localByTriangle[i]; })
+      && closeTravel(travelResidual)
+      && closeTravel((travelLocal === null ? 0 : travelLocal * localTravelCount) - localTravelSum)
+      && closeTravel((travelAll === null ? 0 : travelAll * observed.arrivals) - localTravelSum);
+    const checks = {
+      flowPassed: flowResidual.every(function (x) { return x === 0; }),
+      typePassed: counts.types.reduce(function (a, b) { return a + b; }, 0) === counts.arrivals,
+      allocationPassed: countsConsistent(counts),
+      observedAllocationPassed: countsConsistent(observed) && observed.waitCount.every(function (x, i) { return x === observed.allocated[i]; }),
+      areaPassed: littleResidual.every(closeArea) && overlapResidual.every(closeArea),
+      travelPassed: travelPassed,
+      servicePassed: allServiceMoments.every(function (moments, i) { return moments.count === counts.allocated[i]; })
+        && observedServiceMoments.every(function (moments, i) { return moments.count === observed.allocated[i]; }),
+      travelReconstructionResidual: travelResidual,
+      flowResidual: flowResidual,
+      finiteWindowLittle: {
+        queueArea: areaQ,
+        cohortWaitingTime: waitSum,
+        carryInWaitingTime: carryInWaiting,
+        carryOutWaitingTime: carryOutWaiting,
+        residual: littleResidual,
+        overlapResidual: overlapResidual
+      },
+      events: events,
+      drainCompletions: drainCompletions,
+      drained: n[0] === 0 && n[1] === 0,
+      serviceGenerated: generatedServiceCount,
+      meanGeneratedService: generatedServiceSum.map(function (sum, i) { return meanOrNull(sum, generatedServiceCount[i]); }),
+      measurementStart: warmup,
+      measurementDuration: span
+    };
+    checks.allPassed = checks.flowPassed && checks.typePassed && checks.allocationPassed && checks.observedAllocationPassed && checks.areaPassed && checks.travelPassed && checks.servicePassed && checks.drained;
+    const q1 = areaQ[0] / span;
+    const q2 = areaQ[1] / span;
+    const n1 = areaN[0] / span;
+    const n2 = areaN[1] / span;
+    const waitAll = meanOrNull(waitSum[0] + waitSum[1], observed.waitCount[0] + observed.waitCount[1]);
+    // Match the paper's mean-sojourn-plus-travel objective. Use known mean
+    // service times, weighted by this same post-warm-up arrival cohort, rather
+    // than adding Monte Carlo noise from the generated service durations.
+    const serviceMean = observed.arrivals
+      ? observed.allocated.reduce(function (sum, count, i) { return sum + (count / observed.arrivals) / mu[i]; }, 0)
+      : null;
+    const totalCost = observed.arrivals ? waitAll + serviceMean + alpha * travelAll : null;
+    return {
+      metrics: {
+        q1: q1, q2: q2, qTotal: q1 + q2,
+        n1: n1, n2: n2, nTotal: n1 + n2,
+        wait1: meanOrNull(waitSum[0], observed.waitCount[0]),
+        wait2: meanOrNull(waitSum[1], observed.waitCount[1]),
+        waitAll: waitAll,
+        serviceMean: serviceMean,
+        // Form the full cost within each replication, preserving covariance
+        // between its waiting, clinic allocation, and travel components for CIs.
+        totalCost: totalCost,
+        util1: areaBusy[0] / span, util2: areaBusy[1] / span,
+        travelLocal: travelLocal,
+        // Fixed and flexible patients contribute zero travel in the model.
+        travelAll: travelAll,
+        travelBottom: travelByTriangle[0],
+        travelTop: travelByTriangle[1],
+        alloc1: meanOrNull(observed.allocated[0], observed.arrivals),
+        alloc2: meanOrNull(observed.allocated[1], observed.arrivals),
+        arrivalRate: observed.arrivals / span
+      },
+      counts: counts,
+      observed: observed,
+      serviceTimes: {
+        all: allServiceMoments.map(reportMoments),
+        observed: observedServiceMoments.map(reportMoments),
+        expected: mu.map(function (rate) { return { mean: 1 / rate, sd: (service === 'exponential' ? 1 : cv) / rate }; })
+      },
+      trajectory: trajectory,
+      checks: checks,
+      seed: seed,
+      repIndex: repIndex,
+      drainEnd: t
+    };
+  }
+
+  const api = Object.freeze({ runReplication: runReplication });
+  root.ClinicSim = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script id="batch-source">(function (root) {
+  'use strict';
+
+  // Each policy uses the same exogenous streams in a given replication. The
+  // independent replication index changes all streams between replications;
+  // policy comparisons do not reseed arrivals, patient types, or locations.
+  function variants() {
+    return [
+      { id: 'ac', label: 'Allocation-centered', policy: 'ac', kappa: 0 },
+      { id: 'greedy', label: 'Ordinary greedy', policy: 'greedy', kappa: 0 },
+      { id: 'shortest', label: 'Shortest waiting', policy: 'shortest', kappa: 0 },
+      { id: 'penalized-0.5', label: 'Penalized greedy (κ = 0.5)', policy: 'penalized', kappa: 0.5 },
+      { id: 'penalized-1', label: 'Penalized greedy (κ = 1)', policy: 'penalized', kappa: 1 },
+      { id: 'penalized-2', label: 'Penalized greedy (κ = 2)', policy: 'penalized', kappa: 2 },
+      { id: 'penalized-4', label: 'Penalized greedy (κ = 4)', policy: 'penalized', kappa: 4 },
+      { id: 'penalized-8', label: 'Penalized greedy (κ = 8)', policy: 'penalized', kappa: 8 }
+    ];
+  }
+
+  function copySettings(settings) {
+    return Object.assign({}, settings, {
+      rates: Object.assign({}, settings.rates),
+      mu: settings.mu && settings.mu.slice()
+    });
+  }
+
+  function runComparison(settings, options) {
+    options = options || {};
+    if (!root.ClinicSim || !root.ClinicStats || !root.ClinicGeometry) {
+      throw new Error('Load geometry, statistics, and the simulation engine before the policy comparison.');
+    }
+    const input = copySettings(settings || {});
+    const replications = Number(input.replications);
+    if (!Number.isInteger(replications) || replications < 1 || replications > 500) {
+      throw new Error('Choose an integer from 1 to 500 replications.');
+    }
+    // Always solve at the entered rates. A supplied legacy critical-load
+    // calibration must not override the routing weights for this comparison.
+    const calibration = root.ClinicGeometry.allocationCalibration(input);
+    if (!calibration.feasible && Number(input.rates.local) > 0) {
+      throw new Error('Allocation-centered weights are not defined at these arrival and service rates. ' + (calibration.reasons || []).join(' '));
+    }
+    const policies = variants();
+    const totalRuns = policies.length * replications;
+    let done = 0;
+    const results = policies.map(function (variant) {
+      const policySettings = Object.assign(copySettings(input), {
+        policy: variant.policy,
+        kappa: variant.kappa
+      });
+      const runs = [];
+      for (let replication = 0; replication < replications; replication += 1) {
+        const run = root.ClinicSim.runReplication(policySettings, calibration, replication);
+        // Summaries include all existing metrics and simulation checks are
+        // verified before a row is accepted. Replications retain their compact
+        // outputs so a selected policy can populate the detailed results.
+        if (!run.checks || !run.checks.allPassed) {
+          throw new Error(variant.label + ', replication ' + (replication + 1) + ': simulation checks failed.');
+        }
+        runs.push(run);
+        done += 1;
+        if (typeof options.onProgress === 'function') {
+          options.onProgress({ done: done, total: totalRuns, variant: Object.assign({}, variant), replication: replication + 1 });
+        }
+      }
+      const entry = Object.assign({}, variant, {
+        reps: runs,
+        summary: root.ClinicStats.summarize(runs),
+        allChecksPassed: true
+      });
+      if (typeof options.onPolicyComplete === 'function') options.onPolicyComplete(entry);
+      return entry;
+    });
+    return { settings: input, calibration: calibration, results: results, replications: replications, totalRuns: totalRuns };
+  }
+
+  const api = Object.freeze({ variants: variants, runComparison: runComparison });
+  root.ClinicBatch = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const names = { ac: 'Allocation-centered', greedy: 'Ordinary greedy', penalized: 'Penalized greedy', shortest: 'Shortest waiting (N / μ)' };
+  const metricKeys = ['q1', 'q2', 'qTotal', 'n1', 'n2', 'nTotal', 'wait1', 'wait2', 'waitAll', 'util1', 'util2', 'alloc1', 'alloc2'];
+  let worker = null, workerURL = null, busy = false, latest = null, latestSettings = null, debounce = null;
+  let latestComparison = null, runEpoch = 0;
+  const num = id => Number($(id).value);
+  const fmt = (x, digits = 3) => Number.isFinite(x) ? x.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits }) : '—';
+  const count = x => Number.isFinite(x) ? Math.round(x).toLocaleString() : '—';
+  const pct = (part, total, digits = 1) => total > 0 ? fmt(100 * part / total, digits) + '%' : '—';
+  const escape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function settings() {
+    return { rates: { local: num('rate-local'), flexible: num('rate-flexible'), fixed: num('rate-fixed') }, mu: [num('mu-1'), num('mu-2')], fixedP1: num('fixed-p1') / 100, demandP1: num('demand-p1') / 100, policy: $('policy').value, alpha: num('alpha'), kappa: num('kappa'), service: $('service').value, cv: num('cv'), duration: num('duration'), warmupPct: num('warmup'), replications: num('replications'), seed: num('seed') };
+  }
+
+  function matchesTravelSettings(a, b) {
+    return Boolean(a && b && ['local', 'flexible', 'fixed'].every(key => a.rates[key] === b.rates[key]) &&
+      a.mu.every((value, i) => value === b.mu[i]) && a.fixedP1 === b.fixedP1 && a.demandP1 === b.demandP1);
+  }
+
+  function policyLabel(s) { return names[s.policy] + (s.policy === 'penalized' ? ' (κ = ' + s.kappa + ')' : ''); }
+  function renderComparisonDelay(s, bounds) {
+    const target = ClinicGeometry.greedyDelayTargets(s, bounds);
+    $('comparison-delay').textContent = 'Clinic 1 implied delay (ordinary greedy): ' +
+      (target.available ? fmt(target.delayOffsets[0], 4) + ' time units' : 'Unavailable');
+    $('comparison-delay').title = target.available ?
+      'αδ₁(λ) = U₁ − minᵢ Uᵢ implied by the entered-rate static travel optimization for these comparison inputs. This is a relative routing-delay benchmark, not observed mean waiting.' :
+      target.reasons.join(' ');
+  }
+  function updateResultVisibility() {
+    const comparisonMode = $('policy').value === 'all';
+    $('comparison-panel').hidden = !comparisonMode;
+    $('single-metrics').hidden = comparisonMode;
+    $('comparison-detail-wrap').hidden = !comparisonMode || !latestComparison;
+  }
+
+  function validate(s) {
+    if (Object.values(s.rates).some(x => !Number.isFinite(x) || x < 0)) throw new Error('Arrival rates must be finite, nonnegative numbers.');
+    if (s.mu.some(x => !Number.isFinite(x) || x <= 0)) throw new Error('Both service rates must be positive.');
+    if (!(s.duration > 0) || !Number.isFinite(s.duration)) throw new Error('Simulation length must be positive.');
+    if (!(s.warmupPct >= 0 && s.warmupPct < 100)) throw new Error('Warm-up must be at least 0% and less than 100%.');
+    if (!Number.isInteger(s.replications) || s.replications < 1 || s.replications > 500) throw new Error('Choose an integer from 1 to 500 replications.');
+    if (!Number.isInteger(s.seed) || s.seed < 0 || s.seed > 4294967295) throw new Error('The random seed must be an integer from 0 to 4,294,967,295.');
+    if (!(s.fixedP1 >= 0 && s.fixedP1 <= 1 && s.demandP1 >= 0 && s.demandP1 <= 1)) throw new Error('Demand and fixed-destination probabilities must be between 0% and 100%.');
+    if (!(s.alpha > 0) || !Number.isFinite(s.alpha)) throw new Error('Travel weight α must be positive.');
+    if (!(s.kappa >= 0) || !Number.isFinite(s.kappa)) throw new Error('Penalty κ must be nonnegative.');
+    if (s.service === 'lognormal' && (!(s.cv > 0) || s.cv > 10)) throw new Error('Choose a positive lognormal coefficient of variation, at most 10.');
+    const expected = (s.rates.local + s.rates.flexible + s.rates.fixed) * s.duration;
+    if (!Number.isFinite(expected) || expected > 1500000) throw new Error('This browser tool supports at most 1.5 million expected arrivals per replication. Reduce the rates or simulation length.');
+  }
+
+  function preview(markDirty = true) {
+    const s = settings();
+    $('cv').disabled = s.service !== 'lognormal' || busy;
+    $('kappa').disabled = s.policy !== 'penalized' || busy;
+    $('alpha').disabled = busy;
+    if (!busy) $('run').textContent = s.policy === 'all' ? 'Run comparison' : 'Run simulation';
+    updateResultVisibility();
+    $('comparison-local-rate').textContent = fmt((latestComparison ? latestComparison.settings : s).rates.local, 3);
+    $('demand-label').value = fmt(100 * s.demandP1, 0) + '%';
+    $('demand-complement').textContent = 'Triangle 2: ' + fmt(100 * (1 - s.demandP1), 0) + '%';
+    $('fixed-complement').textContent = 'Clinic 2 receives ' + fmt(100 * (1 - s.fixedP1), 1) + '% of fixed patients';
+    $('window-description').textContent = fmt(s.duration * s.warmupPct / 100, 1) + '–' + fmt(s.duration, 1) + ' time units (' + fmt(s.duration * (1 - s.warmupPct / 100), 1) + ' observed)';
+    const notes = {
+      all: 'Compare allocation-centered, ordinary greedy, shortest waiting, and penalized greedy at κ = 0.5, 1, 2, 4, and 8. Each policy uses the same inputs and replication seeds. The κ field below is used only for a single penalized-greedy run.',
+      ac: 'Local: minimize Nᵢ/μᵢ + α(dᵢ + δᵢ). The static weights δᵢ are optimized at the entered arrival and service rates.',
+      greedy: 'Local: minimize Nᵢ/μᵢ + αdᵢ. Ordinary greedy equals penalized greedy with κ = 0.',
+      penalized: 'Local: minimize (1 + 2κ)Nᵢ/μᵢ + αdᵢ. κ = 0 recovers ordinary greedy.',
+      shortest: 'Local and flexible: minimize Nᵢ/μᵢ. Local travel distance does not affect routing.'
+    };
+    $('policy-note').textContent = notes[s.policy] + ' Fixed assignments are always honored; flexible patients use shortest waiting.';
+    const bounds = ClinicGeometry.travelBounds(s);
+    const c = ClinicGeometry.allocationCalibration(s, bounds);
+    renderComparisonDelay(latestComparison ? latestComparison.settings : s, latestComparison ? undefined : bounds);
+    renderTravelBounds(bounds, s,
+      matchesTravelSettings(s, latestSettings) ? latest.summary.metrics.travelLocal : null);
+    renderGreedyDelayTarget(s, bounds);
+    try {
+      validate(s);
+      const ratio = (s.rates.local + s.rates.flexible + s.rates.fixed) / (s.mu[0] + s.mu[1]);
+      $('load-pill').textContent = 'Offered load ' + fmt(ratio, 3);
+      $('load-pill').className = 'pill ' + (ratio >= 1 ? 'warn' : 'ok');
+      $('calibration-warning').hidden = c.feasible && ratio < 1;
+      $('calibration-warning').textContent = !c.feasible ? 'The static allocation at the entered rates is infeasible: ' + c.reasons.join(' ') + (s.rates.local === 0 ? ' There are no local arrivals, so static weights are not used and the simulation can still run.' : s.policy === 'ac' || s.policy === 'all' ? ' Adjust the rates or choose another policy.' : ' The selected policy can still be simulated over a finite horizon.') : 'The arrival rate is at least total service capacity. The simulation will run, but queues may keep growing.';
+      drawGeometry(s, c);
+      $('calibration-values').innerHTML = kv('Total arrival rate', fmt(c.totalRate, 3)) + kv('Total service capacity', fmt(c.totalCapacity, 3)) + kv('Nearest-clinic local shares', pct(c.nearestShares[0], 1) + ' / ' + pct(c.nearestShares[1], 1)) + kv('Optimal local allocation at entered rates', c.feasible ? pct(c.targetShares[0], 1) + ' / ' + pct(c.targetShares[1], 1) : 'Infeasible') + kv('AC weights δ₁(λ) / δ₂(λ)', c.feasible ? fmt(c.delta[0], 5) + ' / ' + fmt(c.delta[1], 5) : 'Not defined');
+    } catch (e) {
+      $('load-pill').textContent = 'Check inputs'; $('load-pill').className = 'pill warn';
+      $('calibration-values').innerHTML = '<div class="small muted">Enter valid settings to update the benchmark.</div>';
+    }
+    if (markDirty && latest && !busy) {
+      $('status').textContent = 'Settings changed — run again to update the results.';
+      $('status').className = 'status dirty';
+      $('result-tag').textContent = 'Previous run'; $('result-tag').className = 'pill warn';
+      if (latestComparison) { $('comparison-tag').textContent = 'Previous comparison'; $('comparison-tag').className = 'pill warn'; }
+    }
+  }
+
+  function kv(label, value) { return '<span>' + escape(label) + '</span><span class="value">' + escape(value) + '</span>'; }
+
+  function drawGeometry(s, c) {
+    const X = x => 54 + 252 * x, Y = y => 291 - 252 * y;
+    const a = (0.08 + 0.22 * s.demandP1).toFixed(3), b = (0.08 + 0.22 * (1 - s.demandP1)).toFixed(3);
+    let boundary = '';
+    if (c.feasible) {
+      const pts = [];
+      for (let j = 0; j <= 160; j++) {
+        const x = j / 160;
+        const f = y => Math.hypot(x, y) + c.delta[0] - Math.hypot(1 - x, 1 - y) - c.delta[1];
+        if (f(0) > 0 || f(1) < 0) continue;
+        let lo = 0, hi = 1;
+        for (let k = 0; k < 35; k++) { const mid = (lo + hi) / 2; if (f(mid) > 0) hi = mid; else lo = mid; }
+        pts.push([X(x), Y((lo + hi) / 2)]);
+      }
+      if (pts.length > 1) boundary = '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + p.map(x => x.toFixed(2)).join(',' )).join(' ') + '" fill="none" stroke="#183238" stroke-width="2" stroke-dasharray="6 4"/>';
+    }
+    $('geometry').innerHTML = '<title id="geometry-title">Two clinics and triangular demand regions</title><desc id="geometry-desc">Clinic 1 at (0,0), clinic 2 at (1,1). Triangle 1 receives ' + Math.round(100 * s.demandP1) + '% of local demand; triangle 2 receives the remainder. Dashed line is the static allocation boundary.</desc>' +
+      '<polygon points="54,291 306,291 54,39" fill="#216596" fill-opacity="' + a + '"/>' +
+      '<polygon points="306,39 54,39 306,291" fill="#b85b2c" fill-opacity="' + b + '"/>' +
+      '<rect x="54" y="39" width="252" height="252" fill="none" stroke="#c0ced0"/>' +
+      '<path d="M54 39L306 291" stroke="#b5c5c8" stroke-width="1"/>' + boundary +
+      '<text x="117" y="212" fill="#216596" font-size="13" font-weight="600" text-anchor="middle">Triangle 1</text>' +
+      '<text x="117" y="232" fill="#183238" font-size="17" font-weight="650" text-anchor="middle">' + fmt(100 * s.demandP1, 0) + '%</text>' +
+      '<text x="244" y="108" fill="#a54c22" font-size="13" font-weight="600" text-anchor="middle">Triangle 2</text>' +
+      '<text x="244" y="128" fill="#183238" font-size="17" font-weight="650" text-anchor="middle">' + fmt(100 * (1 - s.demandP1), 0) + '%</text>' +
+      '<circle cx="54" cy="291" r="7" fill="#216596" stroke="white" stroke-width="2"/><text x="65" y="277" fill="#216596" font-size="12" font-weight="650">Clinic 1</text>' +
+      '<circle cx="306" cy="39" r="7" fill="#b85b2c" stroke="white" stroke-width="2"/><text x="294" y="61" fill="#a54c22" text-anchor="end" font-size="12" font-weight="650">Clinic 2</text>' +
+      '<text x="54" y="313" text-anchor="middle" fill="#597079" font-size="11">0</text><text x="306" y="313" text-anchor="middle" fill="#597079" font-size="11">1</text>' +
+      '<text x="37" y="295" text-anchor="end" fill="#597079" font-size="11">0</text><text x="37" y="43" text-anchor="end" fill="#597079" font-size="11">1</text>' +
+      '<text x="180" y="335" text-anchor="middle" fill="#597079" font-size="12">x</text><text x="18" y="168" text-anchor="middle" fill="#597079" font-size="12">y</text>';
+  }
+
+  function setBusy(value) {
+    busy = value; $('settings-inputs').disabled = value; $('policy').disabled = value; $('run').disabled = value;
+    $('comparison-detail').disabled = value;
+    $('run').textContent = value ? 'Running…' : $('policy').value === 'all' ? 'Run comparison' : 'Run simulation'; $('cancel').hidden = !value; $('progress').hidden = !value;
+    if (!value) preview(false);
+  }
+
+  function stopWorker() { if (worker) worker.terminate(); worker = null; if (workerURL) URL.revokeObjectURL(workerURL); workerURL = null; }
+  function showError(e) { runEpoch++; $('error').textContent = e && e.message ? e.message : String(e); $('error').hidden = false; $('status').textContent = 'Simulation could not complete.'; $('status').className = 'status error'; setBusy(false); stopWorker(); }
+
+  function start(event) {
+    if (event) event.preventDefault();
+    clearTimeout(debounce);
+    if (busy) return;
+    $('error').hidden = true;
+    let s, c;
+    try { s = settings(); validate(s); c = ClinicGeometry.allocationCalibration(s); if ((s.policy === 'ac' || s.policy === 'all') && !c.feasible && s.rates.local > 0) throw new Error('Allocation-centered weights are not defined at these arrival and service rates. ' + c.reasons.join(' ') + ' Change the rates, or choose greedy or shortest waiting.'); }
+    catch (e) { showError(e); return; }
+    setBusy(true);
+    const token = ++runEpoch;
+    $('progress-fill').style.width = '0%'; $('progress').setAttribute('aria-valuenow', '0');
+    if (s.policy === 'all') { startComparison(s, c, token); return; }
+    $('status').textContent = 'Running 0 of ' + s.replications + ' replications…'; $('status').className = 'status running';
+    const done = reps => {
+      if (token !== runEpoch) return;
+      try {
+        latest = { reps, summary: ClinicStats.summarize(reps), calibration: c, travelBounds: ClinicGeometry.travelBounds(s) }; latestSettings = s;
+        setBusy(false); stopWorker(); render();
+        $('status').textContent = 'Completed ' + s.replications + ' independent replication' + (s.replications === 1 ? '' : 's') + '.'; $('status').className = 'status';
+        $('result-tag').textContent = s.replications === 1 ? '1 replication · no CI' : s.replications + ' replications · 95% CI'; $('result-tag').className = 'pill ok';
+      } catch (e) { showError(e); }
+    };
+    const progress = n => { if (token !== runEpoch) return; const p = Math.round(100 * n / s.replications); $('progress-fill').style.width = p + '%'; $('progress').setAttribute('aria-valuenow', String(p)); $('status').textContent = 'Completed ' + n + ' of ' + s.replications + ' replications…'; };
+    function runFallback() {
+      const reps = [];
+      function next() { if (!busy || token !== runEpoch) return; try { reps.push(ClinicSim.runReplication(s, c, reps.length)); progress(reps.length); if (reps.length === s.replications) done(reps); else setTimeout(next, 0); } catch (e) { showError(e); } }
+      setTimeout(next, 0);
+    }
+    if (typeof Worker !== 'undefined') {
+      try {
+        const sources = ['geometry-source', 'statistics-source', 'engine-source'].map(id => $(id).textContent).join('\n');
+        const runner = '\nself.onmessage=function(e){try{const s=e.data.settings,c=e.data.calibration,reps=[];for(let i=0;i<s.replications;i++){reps.push(ClinicSim.runReplication(s,c,i));self.postMessage({type:"progress",done:i+1});}self.postMessage({type:"done",reps});}catch(error){self.postMessage({type:"error",message:error.message||String(error)});}};';
+        workerURL = URL.createObjectURL(new Blob([sources + runner], { type: 'text/javascript' }));
+        worker = new Worker(workerURL);
+        worker.onmessage = e => { if (token !== runEpoch) return; if (e.data.type === 'progress') progress(e.data.done); else if (e.data.type === 'done') done(e.data.reps); else showError(new Error(e.data.message)); };
+        worker.onerror = e => { e.preventDefault(); if (token !== runEpoch) return; stopWorker(); runFallback(); };
+        worker.postMessage({ settings: s, calibration: c });
+        return;
+      } catch (e) { stopWorker(); }
+    }
+    // Older browsers can still run the same model without a worker.
+    runFallback();
+  }
+
+  function startComparison(s, c, token) {
+    const variants = ClinicBatch.variants(), total = variants.length * s.replications;
+    $('status').textContent = 'Running policy comparison: 0 of ' + total + ' replications…'; $('status').className = 'status running';
+    $('comparison-tag').textContent = latestComparison ? 'Running · prior results below' : 'Running ' + variants.length + ' policies'; $('comparison-tag').className = 'pill warn';
+    function progress(p) {
+      if (token !== runEpoch) return;
+      const percent = Math.round(100 * p.done / p.total);
+      $('progress-fill').style.width = percent + '%'; $('progress').setAttribute('aria-valuenow', String(percent));
+      $('status').textContent = p.variant.label + ' · replication ' + p.replication + '/' + s.replications + ' · ' + p.done + '/' + p.total + ' runs completed';
+    }
+    function done(result) {
+      if (token !== runEpoch) return;
+      latestComparison = result;
+      $('comparison-detail').innerHTML = result.results.map(entry => '<option value="' + escape(entry.id) + '">' + escape(entry.label) + '</option>').join('');
+      $('comparison-detail').value = result.results[0].id;
+      stopWorker();
+      selectComparisonDetail();
+      setBusy(false);
+      renderComparison();
+      $('status').textContent = 'Completed ' + result.results.length + ' policies × ' + s.replications + ' independent replication' + (s.replications === 1 ? '' : 's') + ' (' + result.totalRuns + ' runs).'; $('status').className = 'status';
+      $('result-tag').textContent = s.replications > 1 ? s.replications + ' replications per policy · 95% CI' : '1 replication per policy · no CI'; $('result-tag').className = 'pill ok';
+    }
+    function runFallback() {
+      let policyIndex = 0, reps = [], completed = 0;
+      const results = [];
+      function next() {
+        if (!busy || token !== runEpoch) return;
+        try {
+          const variant = variants[policyIndex];
+          const configured = { ...s, rates: { ...s.rates }, mu: s.mu.slice(), policy: variant.policy, kappa: variant.kappa };
+          const rep = ClinicSim.runReplication(configured, c, reps.length);
+          if (!rep.checks.allPassed) throw new Error(variant.label + ': simulation checks failed.');
+          reps.push(rep); completed++;
+          progress({ done: completed, total, variant, replication: reps.length });
+          if (reps.length === s.replications) {
+            results.push({ ...variant, reps, summary: ClinicStats.summarize(reps), allChecksPassed: true });
+            policyIndex++; reps = [];
+          }
+          if (policyIndex === variants.length) done({ settings: s, calibration: c, results, replications: s.replications, totalRuns: total });
+          else setTimeout(next, 0);
+        } catch (error) { showError(error); }
+      }
+      setTimeout(next, 0);
+    }
+    if (typeof Worker !== 'undefined') {
+      try {
+        const sources = ['geometry-source', 'statistics-source', 'engine-source', 'batch-source'].map(id => $(id).textContent).join('\n');
+        const runner = '\nself.onmessage=function(e){try{const result=ClinicBatch.runComparison(e.data.settings,{onProgress:function(p){self.postMessage({type:"progress",progress:p});}});self.postMessage({type:"done",result});}catch(error){self.postMessage({type:"error",message:error.message||String(error)});}};';
+        workerURL = URL.createObjectURL(new Blob([sources + runner], { type: 'text/javascript' }));
+        worker = new Worker(workerURL);
+        worker.onmessage = e => {
+          if (token !== runEpoch) return;
+          if (e.data.type === 'progress') progress(e.data.progress);
+          else if (e.data.type === 'done') done(e.data.result);
+          else showError(new Error(e.data.message));
+        };
+        worker.onerror = e => { e.preventDefault(); if (token !== runEpoch) return; stopWorker(); runFallback(); };
+        worker.postMessage({ settings: s, calibration: c });
+        return;
+      } catch (error) { stopWorker(); }
+    }
+    runFallback();
+  }
+
+  function selectComparisonDetail() {
+    if (!latestComparison) return;
+    const entry = latestComparison.results.find(row => row.id === $('comparison-detail').value);
+    if (!entry) return;
+    latestSettings = { ...latestComparison.settings, policy: entry.policy, kappa: entry.kappa };
+    latest = { reps: entry.reps, summary: entry.summary, calibration: latestComparison.calibration, travelBounds: ClinicGeometry.travelBounds(latestSettings) };
+    render();
+    preview(false);
+  }
+
+  function renderComparison() {
+    if (!latestComparison) return;
+    const s = latestComparison.settings;
+    $('comparison-local-rate').textContent = fmt(s.rates.local, 3);
+    renderComparisonDelay(s);
+    function interval(m, digits) {
+      if (!m || !Number.isFinite(m.mean)) return 'No observed arrivals';
+      if (!Number.isFinite(m.low) || !Number.isFinite(m.high)) return 'No CI · ' + m.n + ' valid replication' + (m.n === 1 ? '' : 's');
+      return '[' + fmt(m.low, digits) + ', ' + fmt(m.high, digits) + ']' + (m.n < s.replications ? ' · n = ' + m.n : '');
+    }
+    $('comparison-results').querySelector('tbody').innerHTML = latestComparison.results.map(entry => {
+      const waiting = entry.summary.metrics.waitAll, travel = entry.summary.metrics.travelLocal, cost = entry.summary.metrics.totalCost;
+      return '<tr><td class="clinic-name">' + escape(entry.label) + '</td><td><span class="estimate">' + fmt(cost.mean, 4) + '</span></td><td>' + escape(interval(cost, 4)) + '</td><td><span class="estimate">' + fmt(waiting.mean, 4) + '</span></td><td>' + escape(interval(waiting, 4)) + '</td><td><span class="estimate">' + fmt(travel.mean, 6) + '</span></td><td>' + escape(interval(travel, 6)) + '</td></tr>';
+    }).join('');
+    $('comparison-caption').textContent = latestComparison.results.length + ' policies · ' + s.replications + ' independent replication' + (s.replications === 1 ? '' : 's') + ' per policy · ' + (s.replications > 1 ? '95% Student-t intervals' : 'No CI with one replication') + ' · Total cost per patient uses travel weight α = ' + s.alpha;
+    $('comparison-inputs').textContent = 'T = ' + count(s.duration) + ' · Warm-up = ' + s.warmupPct + '% · λL / λC / λF = ' + [s.rates.local, s.rates.flexible, s.rates.fixed].map(value => fmt(value, 2)).join(' / ') +
+      ' · μ = ' + s.mu.map(value => fmt(value, 2)).join(' / ') + ' · Triangle 1 demand = ' + fmt(s.demandP1 * 100, 0) + '% · ' + s.service + (s.service === 'lognormal' ? ' CV = ' + s.cv : '') + ' · α = ' + s.alpha + ' · Seed = ' + s.seed;
+    const notes = [];
+    if (latestComparison.calibration.delta.every(value => value === 0)) notes.push('Allocation-centered and ordinary greedy coincide because the static clinic weights are zero.');
+    if (s.mu[0] === s.mu[1] && 5 / s.mu[0] >= s.alpha * Math.SQRT2) notes.push('κ = 2, 4, and 8 have identical routing at these rates and travel weight: unequal queues send locals to the shorter queue; equal queues send them to the nearest clinic.');
+    $('comparison-equivalence').hidden = !notes.length; $('comparison-equivalence').textContent = notes.join(' ');
+    $('comparison-tag').textContent = 'All ' + latestComparison.totalRuns + ' runs complete'; $('comparison-tag').className = 'pill ok';
+  }
+
+  function ciText(m, scale = 1, digits = 3, suffix = '') {
+    if (!m || !Number.isFinite(m.mean)) return 'No observed arrivals';
+    if (!Number.isFinite(m.low) || !Number.isFinite(m.high)) return 'No CI · ' + m.n + ' valid replication' + (m.n === 1 ? '' : 's');
+    return '95% CI [' + fmt(scale * m.low, digits) + ', ' + fmt(scale * m.high, digits) + ']' + suffix + (m.n < latestSettings.replications ? ' · n = ' + m.n : '');
+  }
+  function estimate(m, scale = 1, digits = 3, suffix = '') {
+    return '<span class="estimate">' + (m && Number.isFinite(m.mean) ? fmt(scale * m.mean, digits) + suffix : '—') + '</span><span class="ci">' + escape(ciText(m, scale, digits, suffix)) + '</span>';
+  }
+  function hero(id, m, unit, digits = 3) { $(id).innerHTML = (m && Number.isFinite(m.mean) ? fmt(m.mean, digits) : '—') + '<span>' + unit + '</span>'; $(id + '-ci').textContent = ciText(m, 1, digits); }
+
+  function render() {
+    const { summary: sum, reps, calibration: c } = latest, s = latestSettings, m = sum.metrics;
+    hero('hero-cost', m.totalCost, 'per patient', 4);
+    hero('hero-w', m.waitAll, 'time units');
+    hero('hero-travel', m.travelLocal, 'distance units', 4);
+    $('hero-cost-note').textContent = 'Waiting + mean service + ' + fmt(s.alpha, 2) + ' × all-customer travel';
+    $('cost-breakdown').innerHTML = kv('Average total cost per patient', fmt(m.totalCost.mean, 4)) +
+      kv('Waiting component', fmt(m.waitAll.mean, 4)) + kv('Mean service component', fmt(m.serviceMean.mean, 4)) +
+      kv('Weighted travel component (α = ' + s.alpha + ')', Number.isFinite(m.travelAll.mean) ? fmt(s.alpha * m.travelAll.mean, 4) : '—');
+    $('cost-result-ci').textContent = ciText(m.totalCost, 1, 4);
+    renderTravelBounds(latest.travelBounds, s, m.travelLocal);
+    updateResultVisibility();
+    $('detail-policy-caption').textContent = 'Detailed tables, service statistics, queue path, and checks below: ' + policyLabel(s) + '.';
+    $('interval-caption').textContent = s.replications > 1 ? 'Mean of ' + s.replications + ' independent replication estimates; Student-t 95% confidence intervals below each value.' : 'Single-replication estimates. Increase replications to obtain 95% confidence intervals.';
+    $('clinic-results').querySelector('tbody').innerHTML = [0, 1].map(i => '<tr><td class="clinic-name"><span class="clinic-dot c' + (i + 1) + '"></span>Clinic ' + (i + 1) + '</td><td>' + estimate(m['q' + (i + 1)]) + '</td><td>' + estimate(m['n' + (i + 1)]) + '</td><td>' + estimate(m['wait' + (i + 1)]) + '</td><td>' + estimate(m['util' + (i + 1)], 100, 2, '%') + '</td><td>' + estimate(m['alloc' + (i + 1)], 100, 2, '%') + '</td></tr>').join('') + '<tr class="total-row"><td>System total</td><td>' + estimate(m.qTotal) + '</td><td>' + estimate(m.nTotal) + '</td><td>' + estimate(m.waitAll) + '</td><td><span class="small muted">See each clinic</span></td><td>' + (sum.observed.arrivals ? '100%' : '—') + '<span class="ci">of observed arrivals</span></td></tr>';
+    const travelGroups = [
+      ['All customers', 'travelAll', sum.observed.arrivals],
+      ['All local customers', 'travelLocal', sum.observed.types[0]],
+      ['Bottom triangle · triangle 1', 'travelBottom', sum.observed.localByTriangle[0]],
+      ['Top triangle · triangle 2', 'travelTop', sum.observed.localByTriangle[1]]
+    ];
+    $('travel-results').querySelector('tbody').innerHTML = travelGroups.map(([label, key, customers]) => {
+      const metric = m[key];
+      return '<tr><td>' + escape(label) + '</td><td><span class="estimate">' + (metric && Number.isFinite(metric.mean) ? fmt(metric.mean, 4) : '—') + '</span></td><td><span class="small">' + escape(ciText(metric, 1, 4)) + '</span></td><td>' + count(customers) + '</td></tr>';
+    }).join('');
+    $('travel-caption').textContent = (s.replications > 1 ? 'Mean travel distance and Student-t 95% intervals are calculated from independent replication estimates.' : 'Single-replication travel estimates. Choose at least 2 replications for 95% confidence intervals.') + ' Counts are pooled across replications. Replications with no customers in a group are omitted only for that group’s estimate.';
+    const warm = s.duration * s.warmupPct / 100;
+    $('run-summary').textContent = names[s.policy] + (s.policy === 'penalized' ? ' (κ = ' + s.kappa + ')' : '') + ' · λL / λC / λF = ' + [s.rates.local, s.rates.flexible, s.rates.fixed].map(x => fmt(x, 3)).join(' / ') + ' · μ = ' + s.mu.map(x => fmt(x, 3)).join(' / ') + ' · observed ' + fmt(warm, 1) + '–' + fmt(s.duration, 1) + ' · ' + s.service + (s.service === 'lognormal' ? ' CV ' + s.cv : '') + ' · base seed ' + s.seed;
+    $('counts-caption').textContent = 'Actual counts pooled across ' + s.replications + ' replication' + (s.replications === 1 ? '' : 's') + '. Percentages below are calculated from these pooled counts; main results use replication means.';
+    arrivalTable('all-arrivals', sum.counts); arrivalTable('observed-arrivals', sum.observed);
+    renderServiceTimes();
+    const pass = reps.every(r => r.checks.allPassed);
+    $('checks-tag').textContent = pass ? 'All conservation checks passed' : 'A check failed'; $('checks-tag').className = 'pill ' + (pass ? 'ok' : 'warn');
+    const flow = [0, 1].map(i => sum.counts.allocated[i] - sum.counts.departures[i] - sum.counts.endN[i]);
+    $('checks').innerHTML = checkRow('Total arrivals / expected total', count(sum.counts.arrivals) + ' / ' + fmt(c.totalRate * s.duration * s.replications, 1)) + checkRow('Full-run type counts sum to arrivals', count(sum.counts.types.reduce((a, b) => a + b, 0)) + ' / ' + count(sum.counts.arrivals), sum.counts.types.reduce((a, b) => a + b, 0) === sum.counts.arrivals) + checkRow('Clinic 1: arrivals − departures − end N', count(flow[0]), flow[0] === 0) + checkRow('Clinic 2: arrivals − departures − end N', count(flow[1]), flow[1] === 0) + checkRow('Patients left at T, clinic 1 / 2', count(sum.counts.endN[0]) + ' / ' + count(sum.counts.endN[1])) + checkRow('Actual offered load λ / (μ₁ + μ₂)', fmt(c.totalRate / c.totalCapacity, 4)) + checkRow('Fixed load λF θᵢ / μᵢ, clinic 1 / 2', fmt(s.rates.fixed * s.fixedP1 / s.mu[0], 4) + ' / ' + fmt(s.rates.fixed * (1 - s.fixedP1) / s.mu[1], 4));
+    const residual = Math.max(0, ...reps.flatMap(r => r.checks.finiteWindowLittle ? r.checks.finiteWindowLittle.residual.map(Math.abs) : [0]));
+    $('window-checks').innerHTML = checkRow('Observation length per replication', fmt(s.duration - warm, 2)) + checkRow('Observed arrivals, clinic 1 / 2', count(sum.observed.allocated[0]) + ' / ' + count(sum.observed.allocated[1])) + checkRow('Waiting times recorded, clinic 1 / 2', count(sum.observed.waitCount[0]) + ' / ' + count(sum.observed.waitCount[1]), sum.observed.waitCount[0] === sum.observed.allocated[0] && sum.observed.waitCount[1] === sum.observed.allocated[1]) + checkRow('Finite-window waiting-area residual, max.', residual.toExponential(2), reps.every(r => r.checks.areaPassed)) + checkRow('Latest drain completion time', fmt(Math.max(...reps.map(r => r.drainEnd)), 2)) + checkRow('Local origins: bottom + top / local arrivals', count(sum.observed.localByTriangle[0] + sum.observed.localByTriangle[1]) + ' / ' + count(sum.observed.types[0]), sum.observed.localByTriangle[0] + sum.observed.localByTriangle[1] === sum.observed.types[0]) + checkRow('Travel-distance checks', reps.every(r => r.checks.travelPassed) ? 'Pass' : 'Check failed', reps.every(r => r.checks.travelPassed)) + checkRow('CI basis', s.replications > 1 ? s.replications + ' independent replications' : '1 replication; no interval');
+    $('replication-results').querySelector('tbody').innerHTML = reps.map((r, i) => '<tr><td>' + (i + 1) + '</td><td class="mono">' + escape(r.seed) + '</td><td>' + count(r.counts.arrivals) + '</td><td>' + fmt(r.metrics.totalCost, 4) + '</td><td>' + fmt(r.metrics.q1) + '</td><td>' + fmt(r.metrics.q2) + '</td><td>' + fmt(r.metrics.qTotal) + '</td><td>' + fmt(r.metrics.wait1) + '</td><td>' + fmt(r.metrics.wait2) + '</td><td>' + (r.checks.allPassed ? 'Pass' : 'Check failed') + '</td></tr>').join('');
+    drawHistory();
+  }
+  function renderServiceTimes() {
+    if (!latest) return;
+    const sum = latest.summary, s = latestSettings;
+    const cohort = $('service-cohort').value;
+    const samples = sum.serviceTimes[cohort];
+    const expectedSD = s.service === 'exponential' ? 1 : s.cv;
+    $('service-time-results').querySelector('tbody').innerHTML = [0, 1].map(i => {
+      const sample = samples[i];
+      return '<tr><td class="clinic-name"><span class="clinic-dot c' + (i + 1) + '"></span>Clinic ' + (i + 1) + '</td><td>' +
+        count(sample.count) + '</td><td>' + fmt(sample.mean, 4) + '</td><td>' + fmt(sample.sd, 4) + '</td><td>' +
+        fmt(1 / s.mu[i], 4) + '</td><td>' + fmt(expectedSD / s.mu[i], 4) + '</td></tr>';
+    }).join('');
+    $('service-time-caption').textContent = (s.service === 'exponential' ? 'Exponential service' : 'Lognormal service · CV = ' + fmt(s.cv, 2)) +
+      ' · ' + (cohort === 'all' ? 'All arrivals, including warm-up' : 'Arrivals after warm-up') +
+      ' · Complete service durations pooled across ' + s.replications + ' replication' + (s.replications === 1 ? '' : 's') + ' · Time units';
+  }
+  function renderGreedyDelayTarget(s, bounds) {
+    const target = ClinicGeometry.greedyDelayTargets(s, bounds);
+    $('greedy-target-basis').textContent = 'Optimization uses local / flexible / fixed arrival rates ' +
+      [s.rates.local, s.rates.flexible, s.rates.fixed].map(value => fmt(value, 4)).join(' / ') +
+      ' and service rates ' + s.mu.map(value => fmt(value, 4)).join(' / ') + '. Arrival rates are used directly.';
+    $('greedy-target-status').textContent = target.available ?
+      (target.queueFloor > 1e-10 ? 'At the entered rates, the travel-optimal assignment diverts some local demand. The optimized clinic weights imply the ordinary-greedy delay offsets below.' :
+        'Nearest-clinic routing fits capacity at the entered rates: the optimized weights and travel-induced delay offsets are zero. Congestion can still produce waiting.') :
+      'Benchmark unavailable. ' + target.reasons.join(' ');
+    $('greedy-target-values').hidden = !target.available;
+    $('greedy-target-observed').hidden = true;
+    const critical = target.critical;
+    $('greedy-target-critical').textContent = critical && critical.available ?
+      'For comparison only, rescaling the arrival mix to total capacity gives the theorem’s critical-load target U₁ − U₂ = ' +
+      fmt(critical.delayGap12, 4) + ' time units and aggregate headcount floor ' + fmt(critical.queueFloor, 4) +
+      '. The table above uses the entered-rate optimization instead.' :
+      'Critical-load comparison unavailable for this input mix.';
+    if (!target.available) return;
+    $('greedy-target-results').querySelector('tbody').innerHTML = [0, 1].map(i => '<tr><td>Clinic ' + (i + 1) +
+      '</td><td>' + pct(target.targetShares[i], 1, 2) + '</td><td>' + fmt(target.delta[i], 6) + '</td><td>' + fmt(target.delayOffsets[i], 4) +
+      '</td><td>' + fmt(target.headcountOffsets[i], 4) + '</td></tr>').join('');
+    const heavy = target.delta[0] >= target.delta[1] ? 0 : 1, other = 1 - heavy;
+    $('greedy-target-summary').textContent = (target.queueFloor > 1e-10 ?
+      'The optimized assignment is reproduced by a delay index at clinic ' + (heavy + 1) + ' that is ' + fmt(target.delayOffsets[heavy], 4) +
+      ' time units above clinic ' + (other + 1) + '. ' : '') +
+      'Minimum aggregate headcount compatible with these offsets: ' + fmt(target.queueFloor, 4) + ' patients, including any in service. ' +
+      'Optimized assigned rates: clinic 1 ' + fmt(target.clinicLoads[0], 4) + ' / ' + fmt(s.mu[0], 4) +
+      ', clinic 2 ' + fmt(target.clinicLoads[1], 4) + ' / ' + fmt(s.mu[1], 4) + ' (assigned rate / capacity). ' +
+      'For penalized greedy, these offsets are divided by 1 + 2κ; at κ = ' + s.kappa + ', the positive delay offset is ' +
+      fmt(Math.max(...target.delayOffsets) / (1 + 2 * s.kappa), 4) + ' time units.';
+    function matches(a) {
+      return matchesTravelSettings(a, s) && ['alpha', 'service', 'cv', 'duration', 'warmupPct', 'replications', 'seed'].every(key => a[key] === s[key]);
+    }
+    let ordinaryRuns = null;
+    if (latestComparison && matches(latestComparison.settings)) {
+      const entry = latestComparison.results.find(row => row.policy === 'greedy');
+      if (entry) ordinaryRuns = entry.reps;
+    } else if (latest && latestSettings.policy === 'greedy' && matches(latestSettings)) ordinaryRuns = latest.reps;
+    if (ordinaryRuns) {
+      const gap = ClinicStats.confidence95(ordinaryRuns.map(rep => rep.metrics.n1 / s.mu[0] - rep.metrics.n2 / s.mu[1]));
+      const interval = Number.isFinite(gap.low) && Number.isFinite(gap.high) ?
+        ' · 95% CI [' + fmt(gap.low, 4) + ', ' + fmt(gap.high, 4) + ']' : ' · One replication; no CI';
+      $('greedy-target-observed').hidden = false;
+      $('greedy-target-observed').textContent = 'Ordinary greedy: simulated time-average U₁ − U₂ = ' + fmt(gap.mean, 4) +
+        ' time units' + interval + '. Entered-rate optimization benchmark: ' + fmt(target.delayGap12, 4) +
+        '. These are delay-index differences, distinct from the measured patient waiting times above.';
+    }
+  }
+  function renderTravelBounds(bounds, s, simulatedLocal) {
+    const actual = bounds.enteredRates;
+    $('travel-bound-basis').textContent = 'Arrival rates (local / flexible / fixed): ' +
+      [s.rates.local, s.rates.flexible, s.rates.fixed].map(value => fmt(value, 4)).join(' / ') +
+      ' · Service rates (clinic 1 / 2): ' + s.mu.map(value => fmt(value, 4)).join(' / ');
+    const active = actual.feasible && actual.applicable;
+    $('travel-bound-details').hidden = !active;
+    if (!active) {
+      $('travel-bound-results').querySelector('tbody').innerHTML = '<tr><td>Current input rates</td><td colspan="3" class="small muted">' +
+        (actual.feasible ? '' : 'Infeasible. ') + escape((actual.reasons || []).join(' ')) + '</td></tr>';
+      $('travel-bound-status').textContent = '';
+      $('travel-bound-loads').querySelector('tbody').innerHTML = '';
+    } else {
+      const split = s.rates.local > 0 ? pct(actual.targetShares[0], 1, 2) + ' / ' + pct(actual.targetShares[1], 1, 2) : 'No local arrivals';
+      $('travel-bound-results').querySelector('tbody').innerHTML = '<tr><td>Current input rates</td><td><span class="estimate">' +
+        (Number.isFinite(actual.localMean) ? fmt(actual.localMean, 4) : 'Not applicable') +
+        '</span></td><td><span class="estimate">' + fmt(actual.perArrivalMean, 4) + '</span></td><td>' + escape(split) + '</td></tr>';
+      const diversion = Math.abs(actual.targetShares[0] - s.demandP1);
+      const allocationNote = s.rates.local === 0 ? 'There are no local arrivals.' : diversion < 1e-9 ?
+        'Nearest-clinic routing fits within capacity. The minimum local travel stays unchanged while that remains feasible.' :
+        'Capacity constraints require ' + pct(diversion, 1, 2) + ' of local patients to use a farther clinic.';
+      $('travel-bound-status').textContent = allocationNote + ' Optimal assigned rates / service capacities: clinic 1 ' +
+        fmt(actual.clinicLoads[0], 4) + ' / ' + fmt(s.mu[0], 4) + '; clinic 2 ' + fmt(actual.clinicLoads[1], 4) + ' / ' + fmt(s.mu[1], 4) + '.';
+      $('travel-bound-interval').textContent = s.rates.local > 0 ?
+        'Feasible local share at clinic 1: ' + pct(actual.targetBounds[0], 1, 2) + ' to ' + pct(actual.targetBounds[1], 1, 2) +
+        '. Nearest-clinic share: ' + pct(s.demandP1, 1, 2) + '. Optimal share: ' + pct(actual.targetShares[0], 1, 2) + '.' :
+        'Only fixed and flexible arrival rates use capacity in this case.';
+      $('travel-bound-loads').querySelector('tbody').innerHTML = [0, 1].map(i => '<tr><td>Clinic ' + (i + 1) + '</td>' +
+        [actual.localRates[i], actual.fixedRates[i], actual.flexibleRates[i], actual.clinicLoads[i], s.mu[i]].map(value => '<td>' + fmt(value, 4) + '</td>').join('') + '</tr>').join('');
+    }
+    const comparable = actual.feasible && Number.isFinite(actual.localMean) && simulatedLocal && Number.isFinite(simulatedLocal.mean);
+    $('travel-bound-comparison').hidden = !comparable;
+    if (comparable) {
+      const difference = simulatedLocal.mean - actual.localMean;
+      $('travel-bound-comparison').textContent = (latestSettings ? policyLabel(latestSettings) + ': simulated' : 'Simulated') + ' local mean minus optimized bound at the same rates: ' + (difference >= 0 ? '+' : '') + fmt(difference, 4) + ' distance units.';
+    }
+  }
+  function checkRow(label, value, pass) { return '<div class="check-row"><span>' + escape(label) + '</span><span class="check-value' + (pass === true ? ' pass' : pass === false ? ' fail' : '') + '">' + escape(value) + '</span></div>'; }
+  function arrivalTable(id, c) {
+    const typeNames = ['Local', 'Flexible', 'Fixed'];
+    const rows = typeNames.map((name, i) => '<tr><td>' + name + '</td><td>' + count(c.types[i]) + '</td><td>' + pct(c.types[i], c.arrivals) + '</td><td>' + count(c.byType[i][0]) + '</td><td>' + pct(c.byType[i][0], c.types[i]) + '</td><td>' + count(c.byType[i][1]) + '</td><td>' + pct(c.byType[i][1], c.types[i]) + '</td></tr>');
+    rows.push('<tr class="total-row"><td>Total</td><td>' + count(c.arrivals) + '</td><td>' + (c.arrivals ? '100.0%' : '—') + '</td><td>' + count(c.allocated[0]) + '</td><td>' + pct(c.allocated[0], c.arrivals) + '</td><td>' + count(c.allocated[1]) + '</td><td>' + pct(c.allocated[1], c.arrivals) + '</td></tr>');
+    $(id).querySelector('tbody').innerHTML = rows.join('');
+  }
+
+  function drawHistory() {
+    if (!latest) return;
+    const points = latest.reps[0].trajectory || [];
+    if (!points.length) { $('history').innerHTML = '<div class="chart-empty">No sampled queue path is available.</div>'; return; }
+    const W = Math.max(350, $('history').clientWidth || 950), H = 250, left = 52, right = 16, top = 15, bottom = 40;
+    const s = latestSettings, maxY = Math.max(1, ...points.map(p => p.q1 + p.q2));
+    const ymax = Math.ceil(maxY * 1.1), X = t => left + t / s.duration * (W - left - right), Y = n => H - bottom - n / ymax * (H - top - bottom);
+    const path = key => points.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(2) + ',' + Y(key === 'total' ? p.q1 + p.q2 : p[key]).toFixed(2)).join(' ');
+    let svg = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Waiting queue path for the first replication; warm-up is shaded."><rect x="' + left + '" y="' + top + '" width="' + Math.max(0, X(s.duration * s.warmupPct / 100) - left) + '" height="' + (H - bottom - top) + '" fill="#f5eedb"/>';
+    for (let i = 0; i <= 4; i++) { const value = ymax * i / 4, y = Y(value); svg += '<line x1="' + left + '" y1="' + y + '" x2="' + (W - right) + '" y2="' + y + '" stroke="#e5ebec"/><text x="' + (left - 9) + '" y="' + (y + 4) + '" text-anchor="end" fill="#597079" font-size="11">' + fmt(value, value % 1 ? 1 : 0) + '</text>'; }
+    const ticks = W < 500 ? 3 : 5;
+    for (let i = 0; i <= ticks; i++) { const t = s.duration * i / ticks, x = X(t); svg += '<text x="' + x + '" y="' + (H - bottom + 20) + '" text-anchor="' + (i === 0 ? 'start' : i === ticks ? 'end' : 'middle') + '" fill="#597079" font-size="11">' + fmt(t, 0) + '</text>'; }
+    svg += '<path d="' + path('total') + '" fill="none" stroke="#183238" stroke-width="1.8"/><path d="' + path('q1') + '" fill="none" stroke="#216596" stroke-width="1.3"/><path d="' + path('q2') + '" fill="none" stroke="#b85b2c" stroke-width="1.3"/>';
+    svg += '<text x="' + (left + (W - left - right) / 2) + '" y="247" text-anchor="middle" fill="#597079" font-size="12">Time</text><text x="14" y="' + (H / 2) + '" text-anchor="middle" transform="rotate(-90 14 ' + H / 2 + ')" fill="#597079" font-size="12">Waiting patients</text></svg>';
+    $('history').innerHTML = svg;
+  }
+
+  $('settings-form').addEventListener('submit', start);
+  $('settings-form').addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(() => preview(), 40); });
+  $('settings-form').addEventListener('change', () => preview());
+  $('policy').addEventListener('change', () => { if ($('policy').value === 'all' && latestComparison) selectComparisonDetail(); preview(); });
+  $('service-cohort').addEventListener('change', renderServiceTimes);
+  $('comparison-detail').addEventListener('change', selectComparisonDetail);
+  $('cancel').addEventListener('click', () => { runEpoch++; stopWorker(); setBusy(false); if (latestComparison) renderComparison(); else { $('comparison-tag').textContent = 'Comparison cancelled'; $('comparison-tag').className = 'pill warn'; } $('status').textContent = 'Run cancelled. Previous completed results are retained.'; $('status').className = 'status dirty'; });
+  let resizeTimer;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawHistory, 100); });
+  preview(false);
+  setTimeout(start, 80);
+})();
+</script>
+</body></html>
